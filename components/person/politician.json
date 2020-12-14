@@ -1,0 +1,29 @@
+{
+  "collectionName": "components_person_politicians",
+  "info": {
+    "name": "politician",
+    "icon": "address-card",
+    "description": ""
+  },
+  "options": {},
+  "attributes": {
+    "image": {
+      "model": "file",
+      "via": "related",
+      "allowedTypes": [
+        "images"
+      ],
+      "plugin": "upload",
+      "required": false
+    },
+    "biography": {
+      "type": "component",
+      "repeatable": false,
+      "component": "translation.long-text-translation"
+    },
+    "name": {
+      "type": "string",
+      "required": true
+    }
+  }
+}

@@ -1,0 +1,52 @@
+{
+  "routes": [
+    {
+      "method": "GET",
+      "path": "/politician-results",
+      "handler": "politician-results.find",
+      "config": {
+        "policies": []
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/politician-results/count",
+      "handler": "politician-results.count",
+      "config": {
+        "policies": []
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/politician-results/:id",
+      "handler": "politician-results.findOne",
+      "config": {
+        "policies": []
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/politician-results",
+      "handler": "politician-results.create",
+      "config": {
+        "policies": []
+      }
+    },
+    {
+      "method": "PUT",
+      "path": "/politician-results/:id",
+      "handler": "politician-results.update",
+      "config": {
+        "policies": []
+      }
+    },
+    {
+      "method": "DELETE",
+      "path": "/politician-results/:id",
+      "handler": "politician-results.delete",
+      "config": {
+        "policies": []
+      }
+    }
+  ]
+}

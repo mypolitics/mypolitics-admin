@@ -1,0 +1,61 @@
+{
+  "kind": "collectionType",
+  "collectionName": "posts",
+  "info": {
+    "name": "Post",
+    "description": ""
+  },
+  "options": {
+    "increments": true,
+    "timestamps": true,
+    "draftAndPublish": true
+  },
+  "attributes": {
+    "thumbnail": {
+      "model": "file",
+      "via": "related",
+      "allowedTypes": [
+        "images"
+      ],
+      "plugin": "upload",
+      "required": true
+    },
+    "category": {
+      "type": "enumeration",
+      "enum": [
+        "news",
+        "view"
+      ],
+      "required": true
+    },
+    "featured": {
+      "type": "boolean",
+      "default": false,
+      "required": true
+    },
+    "title": {
+      "type": "component",
+      "repeatable": false,
+      "component": "translation.short-text-translation",
+      "required": true
+    },
+    "content": {
+      "type": "component",
+      "repeatable": false,
+      "component": "translation.rich-text-translation",
+      "required": true
+    },
+    "subcategory": {
+      "type": "component",
+      "repeatable": false,
+      "component": "translation.short-text-translation",
+      "required": true
+    },
+    "slug": {
+      "type": "component",
+      "repeatable": false,
+      "component": "translation.short-text-translation",
+      "required": true
+    }
+  }
+}

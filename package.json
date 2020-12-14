@@ -1,0 +1,42 @@
+{
+  "name": "mypolitics-api-v-2",
+  "private": true,
+  "version": "0.1.0",
+  "description": "A Strapi application",
+  "scripts": {
+    "develop": "strapi develop",
+    "start": "strapi start",
+    "build": "strapi build",
+    "strapi": "strapi"
+  },
+  "devDependencies": {},
+  "dependencies": {
+    "@ckeditor/ckeditor5-build-classic": "^24.0.0",
+    "@ckeditor/ckeditor5-react": "^3.0.0",
+    "ckeditor-build-with-simple-upload-provider-strapi": "^1.0.7",
+    "minio": "^7.0.17",
+    "slugify": "^1.4.6",
+    "strapi": "3.3.4",
+    "strapi-admin": "3.3.4",
+    "strapi-connector-mongoose": "3.3.4",
+    "strapi-plugin-content-manager": "3.3.4",
+    "strapi-plugin-content-type-builder": "3.3.4",
+    "strapi-plugin-email": "3.3.4",
+    "strapi-plugin-graphql": "^3.3.4",
+    "strapi-plugin-upload": "3.3.4",
+    "strapi-plugin-users-permissions": "3.3.4",
+    "strapi-provider-upload-minio": "file:providers/strapi-provider-upload-minio",
+    "strapi-utils": "3.3.4"
+  },
+  "author": {
+    "name": "Adrian Orlow"
+  },
+  "strapi": {
+    "uuid": "b23b9816-43dd-404e-ac99-042a5ef37dcf"
+  },
+  "engines": {
+    "node": ">=10.16.0 <=14.x.x",
+    "npm": ">=6.0.0"
+  },
+  "license": "MIT"
+}

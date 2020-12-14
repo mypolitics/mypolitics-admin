@@ -1,0 +1,37 @@
+{
+  "kind": "collectionType",
+  "collectionName": "politician_results",
+  "info": {
+    "name": "PoliticianResults",
+    "description": ""
+  },
+  "options": {
+    "increments": true,
+    "timestamps": true,
+    "draftAndPublish": true
+  },
+  "attributes": {
+    "rid": {
+      "type": "string"
+    },
+    "category": {
+      "type": "enumeration",
+      "enum": [
+        "politician",
+        "commentator",
+        "youth"
+      ]
+    },
+    "featured": {
+      "type": "boolean"
+    },
+    "politician": {
+      "type": "component",
+      "repeatable": false,
+      "component": "person.politician"
+    },
+    "slug": {
+      "type": "string"
+    }
+  }
+}

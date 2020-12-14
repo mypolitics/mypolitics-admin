@@ -1,0 +1,16 @@
+{
+  "collectionName": "components_translation_long_text_translations",
+  "info": {
+    "name": "LongTextTranslation",
+    "icon": "align-left"
+  },
+  "options": {},
+  "attributes": {
+    "pl": {
+      "type": "text"
+    },
+    "en": {
+      "type": "text"
+    }
+  }
+}
