@@ -1,0 +1,20 @@
+{
+  "kind": "singleType",
+  "collectionName": "partners",
+  "info": {
+    "name": "Partners",
+    "description": ""
+  },
+  "options": {
+    "increments": true,
+    "timestamps": true,
+    "draftAndPublish": false
+  },
+  "attributes": {
+    "partners": {
+      "type": "component",
+      "repeatable": true,
+      "component": "person.partner"
+    }
+  }
+}

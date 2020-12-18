@@ -19,6 +19,6 @@ const onChange = (data) => {
 module.exports = {
   lifecycles: {
     beforeCreate: onChange,
-    beforeUpdate: (_, data) => onChange(data),
+    beforeUpdate: (_, data) => data.title && onChange(data),
   },
 };

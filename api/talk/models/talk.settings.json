@@ -1,0 +1,54 @@
+{
+  "kind": "collectionType",
+  "collectionName": "talks",
+  "info": {
+    "name": "Talk",
+    "description": ""
+  },
+  "options": {
+    "increments": true,
+    "timestamps": true,
+    "draftAndPublish": true
+  },
+  "attributes": {
+    "title": {
+      "type": "string"
+    },
+    "start": {
+      "type": "datetime"
+    },
+    "end": {
+      "type": "datetime"
+    },
+    "type": {
+      "type": "enumeration",
+      "enum": [
+        "classic",
+        "mvsp",
+        "interview"
+      ]
+    },
+    "url": {
+      "type": "string"
+    },
+    "thumbnail": {
+      "model": "file",
+      "via": "related",
+      "allowedTypes": [
+        "images",
+        "files",
+        "videos"
+      ],
+      "plugin": "upload",
+      "required": false
+    },
+    "lang": {
+      "type": "enumeration",
+      "enum": [
+        "pl",
+        "en"
+      ],
+      "default": "pl"
+    }
+  }
+}
