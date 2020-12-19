@@ -3,7 +3,7 @@ name: CD
 on:
   push:
     branches:
-      - master
+      - main
 
 jobs:
   build:
@@ -19,3 +19,4 @@ jobs:
           HOST: ${{ secrets.HOST }}
           PROJECT: beta-mypolitics-api
           APP_CONFIG: ${{ secrets.APP_CONFIG }}
+          BRANCH: main
