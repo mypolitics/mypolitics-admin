@@ -1,0 +1,29 @@
+{
+  "kind": "singleType",
+  "collectionName": "documents",
+  "info": {
+    "name": "Documents"
+  },
+  "options": {
+    "increments": true,
+    "timestamps": true,
+    "draftAndPublish": false
+  },
+  "attributes": {
+    "rules": {
+      "type": "component",
+      "repeatable": false,
+      "component": "translation.rich-text-translation"
+    },
+    "privacy": {
+      "type": "component",
+      "repeatable": false,
+      "component": "translation.rich-text-translation"
+    },
+    "gdpr": {
+      "type": "component",
+      "repeatable": false,
+      "component": "translation.rich-text-translation"
+    }
+  }
+}
