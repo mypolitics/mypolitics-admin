@@ -40,14 +40,15 @@ class UploadAdapter {
         r => r.json()
       ).then(res => {
         const { url, formats } = res[0];
-        const { large, medium, small, thumbnail } = formats;
-        resolve({
-          default: url,
-          '1000': large.url,
-          '750': medium.url,
-          '500': small.url,
-          '245': thumbnail.url,
+        const formatsUrls = {
+          default: url
+        };
+
+        formats.forEach(({ width, url }) => {
+          formatsUrls[width] = url
         });
+
+        resolve(formats);
       }).catch(error => {
         console.error(error);
         reject(error)
