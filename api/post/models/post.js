@@ -8,12 +8,35 @@ const slugTitle = (title) => {
   return Object.fromEntries(translationsSlug);
 };
 
-const onChange = (data) => {
-  const withoutSlugOrEmpty = (k) => !['__v', ...Object.keys(data.slug)].includes(k) || data.slug[k] === '';
+const getSlugs = (data) => {
+  const withoutSlugOrEmpty = (k) => (
+    !['__v', ...Object.keys(data.slug)].includes(k) || data.slug[k] === ''
+  );
   const toEntries = (k) => [k, data.title[k]];
   const titleEntries = Object.keys(data.title).filter(withoutSlugOrEmpty).map(toEntries);
   const title = Object.fromEntries(titleEntries);
-  data.slug = { ...data.slug, ...slugTitle(title) };
+  return slugTitle(title);
+};
+
+const getDefaultTitle = (data) => {
+  const withoutId = (k) => !['__v', 'id', '_id'].includes(k);
+  const withoutEmpty = (k) => data.title[k] !== "";
+  const toValues = (k) => data.title[k];
+  const notEmptyTitles = Object
+    .keys(data.title)
+    .filter(withoutId)
+    .filter(withoutEmpty)
+    .map(toValues);
+  return notEmptyTitles[0] !== undefined ? notEmptyTitles[0] : "";
+};
+
+const onChange = (data) => {
+  data.slug = {
+    ...data.slug,
+    ...getSlugs(data)
+  };
+
+  data.default_title = getDefaultTitle(data);
 };
 
 module.exports = {

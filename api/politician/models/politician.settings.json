@@ -1,0 +1,42 @@
+{
+  "kind": "collectionType",
+  "collectionName": "politicians",
+  "info": {
+    "name": "Politician",
+    "description": ""
+  },
+  "options": {
+    "increments": true,
+    "timestamps": true,
+    "draftAndPublish": false
+  },
+  "attributes": {
+    "image": {
+      "model": "file",
+      "via": "related",
+      "allowedTypes": [
+        "images",
+        "files",
+        "videos"
+      ],
+      "plugin": "upload",
+      "required": false
+    },
+    "biography": {
+      "type": "component",
+      "repeatable": false,
+      "component": "translation.long-text-translation"
+    },
+    "name": {
+      "type": "string"
+    },
+    "politician_results": {
+      "via": "politician",
+      "collection": "politician-results"
+    },
+    "talks": {
+      "collection": "talk",
+      "via": "politicians"
+    }
+  }
+}

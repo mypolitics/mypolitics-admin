@@ -56,6 +56,15 @@
       "repeatable": false,
       "component": "translation.short-text-translation",
       "required": true
+    },
+    "authors": {
+      "via": "posts",
+      "collection": "author",
+      "dominant": true
+    },
+    "default_title": {
+      "type": "string",
+      "private": false
     }
   }
 }

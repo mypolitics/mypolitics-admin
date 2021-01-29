@@ -5,13 +5,15 @@ const slugify = require('slugify');
 module.exports = {
   lifecycles: {
     beforeCreate: async (data) => {
-      if (data.politician.name) {
-        data.slug = slugify(data.politician.name).toLowerCase();
+      const politician = await strapi.query('politician').findOne({ id: data.politician });
+      if (politician) {
+        data.slug = slugify(politician.name).toLowerCase();
       }
     },
     beforeUpdate: async (params, data) => {
-      if (data.politician.name) {
-        data.slug = slugify(data.politician.name).toLowerCase();
+      const politician = await strapi.query('politician').findOne({ id: data.politician });
+      if (politician) {
+        data.slug = slugify(politician.name).toLowerCase();
       }
     },
   },
