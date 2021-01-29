@@ -49,6 +49,11 @@
         "en"
       ],
       "default": "pl"
+    },
+    "politicians": {
+      "via": "talks",
+      "collection": "politician",
+      "dominant": true
     }
   }
 }

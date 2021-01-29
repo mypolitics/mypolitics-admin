@@ -8,7 +8,7 @@
   "options": {
     "increments": true,
     "timestamps": true,
-    "draftAndPublish": true
+    "draftAndPublish": false
   },
   "attributes": {
     "rid": {
@@ -25,13 +25,19 @@
     "featured": {
       "type": "boolean"
     },
-    "politician": {
-      "type": "component",
-      "repeatable": false,
-      "component": "person.politician"
-    },
     "slug": {
       "type": "string"
+    },
+    "politician": {
+      "model": "politician",
+      "via": "politician_results"
+    },
+    "quiz_slug": {
+      "type": "enumeration",
+      "enum": [
+        "mypolitics"
+      ],
+      "default": "mypolitics"
     }
   }
 }
