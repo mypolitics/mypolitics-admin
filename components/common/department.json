@@ -1,0 +1,29 @@
+{
+  "collectionName": "components_common_departments",
+  "info": {
+    "name": "department",
+    "icon": "align-center",
+    "description": ""
+  },
+  "options": {},
+  "attributes": {
+    "title": {
+      "type": "string"
+    },
+    "leaders": {
+      "collection": "member"
+    },
+    "members": {
+      "collection": "member"
+    },
+    "logo": {
+      "model": "file",
+      "via": "related",
+      "allowedTypes": [
+        "images"
+      ],
+      "plugin": "upload",
+      "required": false
+    }
+  }
+}
