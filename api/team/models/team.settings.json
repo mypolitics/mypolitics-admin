@@ -1,0 +1,20 @@
+{
+  "kind": "singleType",
+  "collectionName": "teams",
+  "info": {
+    "name": "Team",
+    "description": ""
+  },
+  "options": {
+    "increments": true,
+    "timestamps": true,
+    "draftAndPublish": false
+  },
+  "attributes": {
+    "departments": {
+      "type": "component",
+      "repeatable": true,
+      "component": "common.department"
+    }
+  }
+}

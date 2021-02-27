@@ -35,8 +35,8 @@
       "collection": "politician-results"
     },
     "talks": {
-      "collection": "talk",
-      "via": "politicians"
+      "via": "politicians",
+      "collection": "talk"
     }
   }
 }

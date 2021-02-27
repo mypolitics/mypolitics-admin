@@ -1,0 +1,28 @@
+{
+  "routes": [
+    {
+      "method": "GET",
+      "path": "/patreons",
+      "handler": "patreons.find",
+      "config": {
+        "policies": []
+      }
+    },
+    {
+      "method": "PUT",
+      "path": "/patreons",
+      "handler": "patreons.update",
+      "config": {
+        "policies": []
+      }
+    },
+    {
+      "method": "DELETE",
+      "path": "/patreons",
+      "handler": "patreons.delete",
+      "config": {
+        "policies": []
+      }
+    }
+  ]
+}

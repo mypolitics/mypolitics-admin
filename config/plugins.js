@@ -15,5 +15,9 @@ module.exports = ({ env }) => ({
     depthLimit: 7,
     amountLimit: 100,
     federation: true,
+    apolloServer: {
+      tracing: true,
+      federation: true,
+    }
   }
 });

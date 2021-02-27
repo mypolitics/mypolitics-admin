@@ -25,7 +25,9 @@
       "enum": [
         "classic",
         "mvsp",
-        "interview"
+        "interview",
+        "expert",
+        "ring"
       ]
     },
     "url": {
@@ -51,9 +53,12 @@
       "default": "pl"
     },
     "politicians": {
-      "via": "talks",
       "collection": "politician",
+      "via": "talks",
       "dominant": true
+    },
+    "moderators": {
+      "collection": "member"
     }
   }
 }

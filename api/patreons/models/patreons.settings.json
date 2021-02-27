@@ -1,0 +1,17 @@
+{
+  "kind": "singleType",
+  "collectionName": "patreons",
+  "info": {
+    "name": "Patreons"
+  },
+  "options": {
+    "increments": true,
+    "timestamps": true,
+    "draftAndPublish": true
+  },
+  "attributes": {
+    "list": {
+      "type": "richtext"
+    }
+  }
+}
