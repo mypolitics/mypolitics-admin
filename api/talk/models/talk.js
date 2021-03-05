@@ -1,72 +1,89 @@
 'use strict';
 
-const axios = require('axios');
-
-/*const brands = {
-  'mvsp': '6376486378668032',
-  'classic': '5990601388720128',
-  'interview': '4976477451321344',
-  'expert': '6570354065801216',
-  'ring': '6040516632510464'
-};
-
-const destinations = {
-  'facebook': '5451405091667968',
-  'youtube': '5768594248171520'
-};
-
-const headers = {
-  Cookie: `jwt=${process.env.STREAMYARD_JWT}`,
-};
-
-const buildTitle = (data) => {
-
-  const config = {
-    'mvsp': `MŁODZIEŻ VS ${data.title.toUpperCase()}`,
-    'classic': `${data.title} | DEBATA MŁODZIEŻÓWEK`,
-    'interview': `${data.title} o sytuacji w Polsce! | WYWIAD`,
-    'expert': `${data.title} | OKIEM EKSPERTA`,
-    'ring': `${data.title} | RING POLITYCZNY`,
-  }
-
-  return config[data.type];
-}
-
-const createBroadcast = async (data) => {
-  return await axios.request({
-    url: "https://streamyard.com/api/broadcasts",
-    data: {
-      title: buildTitle(data),
-      recordOnly: false,
-      selectedBrandId: brands[data.type],
-      csrfToken: "46Tc0fhhdD7B49nWurLlz8M0"
-    },
-    method: 'POST',
-    headers,
-    withCredentials: true,
+const onChange = async (data) => {
+  const politicians = await strapi.query('politician').find({
+    id_in: data.politicians
   });
-};
 
-const createOutput = async (data, id, outputType) => {
-  const formData = new FormData();
-
-  formData.append('title', buildTitle(data));
-  formData.append('description', '');
-  formData.append('destinationId', destinations[outputType]);
-
-  if (outputType === 'youtube') {
-    formData.append('image', data.thumbnail);
-    formData.append('plannedStartTime', data.start);
+  if (data.politicians.length === 1 && data.type !== "expert") {
+    data.title = politicians[0].name;
   }
 
-  return await axios.request({
-    url: `https://streamyard.com/api/broadcasts/${id}/outputs`,
-    data: formData,
-    method: 'POST',
-    headers,
-    withCredentials: true,
-  })
-}*/
+  if (data.politicians.length === 2) {
+    const getLastName = (index) => {
+      const [_, lastName] = politicians[index].name.split(' ');
+      return lastName;
+    };
+
+    data.title = `${getLastName(0)} VS ${getLastName(1)}`.toUpperCase();
+  }
+
+  const { image, buffer } = await strapi.services.images(data);
+  data.thumbnail = image;
+  console.log('TALK: Image initialized');
+
+  await strapi.services.streamyard(data, buffer);
+  console.log('TALK: Streamyard initialized');
+
+  const socialDescription = await strapi.services.talk.buildDescription(data, {
+    withPostamble: false,
+    inFuture: false,
+    withUrl: true
+  });
+
+  if (!data.tt_post_id) {
+    const nowTime = (new Date()).getTime() + 60 * 1000;
+    const startTime = (new Date(data.start)).getTime();
+
+    const { data: nowPost } = await strapi.services.twitter.post({
+      status: socialDescription,
+      executeAt: nowTime,
+      medias: [buffer]
+    });
+
+    const { data: startPost } = await strapi.services.twitter.post({
+      status: socialDescription,
+      executeAt: startTime,
+      medias: [buffer]
+    });
+
+    data.tt_post_id = `${nowPost},${startPost}`;
+  }
+  console.log('TALK: Twitter initialized');
+
+  if (!data.fb_post_id) {
+    const startTime = Math.round((new Date(data.start)).getTime() / 1000);
+
+    const nowPost = await strapi.services.facebook.post({
+      message: socialDescription,
+      mediaUrl: image.url,
+    });
+
+    const startPost = await strapi.services.facebook.post({
+      message: socialDescription,
+      scheduledPublishTime: startTime,
+      mediaUrl: image.url,
+    });
+
+    data.fb_post_id = `${nowPost.post_id},${startPost.id}`;
+  }
+  console.log('TALK: Facebook initialized');
+};
 
 module.exports = {
+  lifecycles: {
+    beforeUpdate: async (_, data) => {
+      if (data.lang !== "pl") {
+        return;
+      }
+
+      const moreData = await strapi.query('talk').findOne({
+        id: data._id
+      });
+
+      if (moreData.published_at !== null) {
+        await onChange(data);
+      }
+    },
+  },
 };

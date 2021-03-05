@@ -15,6 +15,7 @@
     "@ckeditor/ckeditor5-build-classic": "^24.0.0",
     "@ckeditor/ckeditor5-react": "^3.0.0",
     "ckeditor-build-with-simple-upload-provider-strapi": "^1.0.7",
+    "fb": "^2.0.0",
     "minio": "^7.0.17",
     "slugify": "^1.4.6",
     "strapi": "3.5.0",
