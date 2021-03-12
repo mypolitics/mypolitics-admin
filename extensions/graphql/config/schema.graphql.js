@@ -6,7 +6,8 @@ module.exports = {
     UsersPermissionsLoginPayload: false,
     UploadFile: false,
     UserPermissionsPasswordPayload: false,
-    UsersPermissionsLoginInput: false
+    UsersPermissionsLoginInput: false,
+    CreateUserInput: false,
   },
   resolver: {
     Query: {

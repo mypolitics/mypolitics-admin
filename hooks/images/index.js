@@ -8,8 +8,8 @@ const btoa = function (str) {
 
 const buildData = async (data) => {
   const politicians = await strapi.query('politician').find({
-    id_in: data.politicians
-  });
+    id_in: data.politicians,
+  }, ['organisation']);
 
   const organisations = await strapi.query('organisation').find({
     id_in: data.organisations

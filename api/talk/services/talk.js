@@ -22,7 +22,8 @@ const buildDescription = async (data, { withPostamble = false, inFuture = false,
       return `⭐ ${name} [${organisation.name}] kontra młodzieżówki w kolejnym odcinku #MłodzieżVsPolitycy!`
     },
     'classic': () => {
-      const localPostamble = `👉 Organizacje uczestniczące:\n${organisations.map(({name}) => `${name}\n`)}\`}`;
+      const orgs = organisations.map(({name}) => name).join("\n");
+      const localPostamble = `👉 Organizacje uczestniczące:\n${orgs}`;
       const additionalText = withPostamble ? `\n\n${localPostamble}` : '';
 
       return `⭐ ${data.title} - jakie poglądy na tę kwestię ma młodzież? Zapraszamy do oglądania #DebataMłodzieżówek!${additionalText}`
@@ -47,7 +48,19 @@ const buildDescription = async (data, { withPostamble = false, inFuture = false,
   paragraphs.push(config[data.type]());
 
   if (inFuture) {
-    const date = moment(data.start).locale("pl").format('To już dddd (D.MM) o HH:mm!');
+    const dayDeclination = [
+      "w niedzielę",
+      "w poniedziałek",
+      "we wtorek",
+      "w środę",
+      "w czwartek",
+      "w piątek",
+      "w sobotę",
+    ];
+    const dateBase = moment(data.start);
+    const dayName = dayDeclination[dateBase.day()];
+
+    const date = moment(data.start).locale("pl").format(`[To już ${dayName}] (D.MM) o HH:mm!`);
     paragraphs.push(date)
   }
 
@@ -78,7 +91,7 @@ Telegram: https://t.me/mypoliticsofficial​
   
 __
 Sprawdź wersję 3.0 naszego testu poglądów!
-➡️ https://beta.mypolitics.pl`);
+➡️ https://mypolitics.pl`);
   }
 
   return paragraphs.join(`\n\n`);

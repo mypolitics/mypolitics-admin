@@ -2,7 +2,8 @@
   "kind": "collectionType",
   "collectionName": "organisations",
   "info": {
-    "name": "Organisation"
+    "name": "Organisation",
+    "description": ""
   },
   "options": {
     "increments": true,
@@ -23,12 +24,15 @@
       "required": false
     },
     "talks": {
-      "via": "organisations",
-      "collection": "talk"
+      "collection": "talk",
+      "via": "organisations"
     },
     "politicians": {
-      "via": "organisation",
-      "collection": "politician"
+      "collection": "politician",
+      "via": "organisation"
+    },
+    "shortname": {
+      "type": "string"
     }
   }
 }

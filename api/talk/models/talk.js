@@ -1,48 +1,63 @@
 'use strict';
 
-const onChange = async (data) => {
+const onChange = async (data, { hard = false }) => {
   const politicians = await strapi.query('politician').find({
     id_in: data.politicians
-  });
+  }, ['organisation']);
 
   if (data.politicians.length === 1 && data.type !== "expert") {
-    data.title = politicians[0].name;
+    const { name } = politicians[0];
+    const inOrg = typeof politicians[0].organisation !== "undefined";
+    const postamble = inOrg ? ` [${politicians[0].organisation.shortname}]` : '';
+
+    data.title = `${name}${postamble}`;
   }
 
   if (data.politicians.length === 2) {
-    const getLastName = (index) => {
-      const [_, lastName] = politicians[index].name.split(' ');
-      return lastName;
+    const getLastNameAndOrg = (index) => {
+      const { name, organisation: { shortname: orgName } } = politicians[index];
+      const [_, lastName] = name.split(' ');
+      return `${lastName.toUpperCase()} [${orgName}]`;
     };
 
-    data.title = `${getLastName(0)} VS ${getLastName(1)}`.toUpperCase();
+    data.title = `${getLastNameAndOrg(0)} VS ${getLastNameAndOrg(1)}`;
   }
 
   const { image, buffer } = await strapi.services.images(data);
   data.thumbnail = image;
   console.log('TALK: Image initialized');
 
+  if (!hard) {
+    return;
+  }
+
   await strapi.services.streamyard(data, buffer);
   console.log('TALK: Streamyard initialized');
 
-  const socialDescription = await strapi.services.talk.buildDescription(data, {
+  const socialDescriptionNow = await strapi.services.talk.buildDescription(data, {
+    withPostamble: false,
+    inFuture: true,
+    withUrl: true
+  });
+
+  const socialDescriptionFuture = await strapi.services.talk.buildDescription(data, {
     withPostamble: false,
     inFuture: false,
     withUrl: true
   });
 
   if (!data.tt_post_id) {
-    const nowTime = (new Date()).getTime() + 60 * 1000;
+    const nowTime = (new Date()).getTime() + 5 * 60 * 1000;
     const startTime = (new Date(data.start)).getTime();
 
     const { data: nowPost } = await strapi.services.twitter.post({
-      status: socialDescription,
+      status: socialDescriptionNow,
       executeAt: nowTime,
       medias: [buffer]
     });
 
     const { data: startPost } = await strapi.services.twitter.post({
-      status: socialDescription,
+      status: socialDescriptionFuture,
       executeAt: startTime,
       medias: [buffer]
     });
@@ -55,12 +70,12 @@ const onChange = async (data) => {
     const startTime = Math.round((new Date(data.start)).getTime() / 1000);
 
     const nowPost = await strapi.services.facebook.post({
-      message: socialDescription,
+      message: socialDescriptionNow,
       mediaUrl: image.url,
     });
 
     const startPost = await strapi.services.facebook.post({
-      message: socialDescription,
+      message: socialDescriptionFuture,
       scheduledPublishTime: startTime,
       mediaUrl: image.url,
     });
@@ -81,9 +96,8 @@ module.exports = {
         id: data._id
       });
 
-      if (moreData.published_at !== null) {
-        await onChange(data);
-      }
+      const hard = moreData && moreData.published_at !== null;
+      await onChange(data, { hard });
     },
   },
 };

@@ -39,8 +39,8 @@
       "collection": "talk"
     },
     "organisation": {
-      "model": "organisation",
-      "via": "politicians"
+      "via": "politicians",
+      "model": "organisation"
     }
   }
 }

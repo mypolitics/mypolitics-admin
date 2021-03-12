@@ -3,8 +3,6 @@ const _ = require('lodash');
 const FormData = require('form-data');
 
 const buildTitle = (data) => {
-  const preambule = process.env.NODE_ENV === "development" ? `[TEST SYSTEMU] ` : '';
-
   const config = {
     'mvsp': `MŁODZIEŻ VS ${data.title.toUpperCase()}`,
     'classic': `${data.title} | DEBATA MŁODZIEŻÓWEK`,
@@ -13,7 +11,7 @@ const buildTitle = (data) => {
     'ring': `${data.title} | RING POLITYCZNY`,
   };
 
-  return `${preambule}${config[data.type]}`;
+  return config[data.type];
 };
 
 const brands = {
