@@ -7,7 +7,7 @@ const onChange = async (data, { hard = false }) => {
 
   if (data.politicians.length === 1 && data.type !== "expert") {
     const { name } = politicians[0];
-    const inOrg = typeof politicians[0].organisation !== "undefined";
+    const inOrg = typeof politicians[0].organisation?.shortname !== "undefined";
     const postamble = inOrg ? ` [${politicians[0].organisation.shortname}]` : '';
 
     data.title = `${name}${postamble}`;
