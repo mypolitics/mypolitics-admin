@@ -59,6 +59,21 @@
     },
     "moderators": {
       "collection": "member"
+    },
+    "organisations": {
+      "via": "talks",
+      "collection": "organisation",
+      "dominant": true
+    },
+    "streamyard_id": {
+      "type": "string",
+      "private": true
+    },
+    "fb_post_id": {
+      "type": "string"
+    },
+    "tt_post_id": {
+      "type": "string"
     }
   }
 }

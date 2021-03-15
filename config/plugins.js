@@ -8,16 +8,4 @@ module.exports = ({ env }) => ({
       bucket: 'mypolitics2',
     },
   },
-  graphql: {
-    endpoint: '/graphql',
-    shadowCRUD: true,
-    playgroundAlways: false,
-    depthLimit: 7,
-    amountLimit: 100,
-    federation: true,
-    apolloServer: {
-      tracing: true,
-      federation: true,
-    }
-  }
 });

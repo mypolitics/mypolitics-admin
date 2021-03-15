@@ -29,8 +29,8 @@
       "type": "string"
     },
     "politician": {
-      "model": "politician",
-      "via": "politician_results"
+      "via": "politician_results",
+      "model": "politician"
     },
     "quiz_slug": {
       "type": "enumeration",

@@ -31,12 +31,16 @@
       "type": "string"
     },
     "politician_results": {
-      "via": "politician",
-      "collection": "politician-results"
+      "collection": "politician-results",
+      "via": "politician"
     },
     "talks": {
       "via": "politicians",
       "collection": "talk"
+    },
+    "organisation": {
+      "via": "politicians",
+      "model": "organisation"
     }
   }
 }

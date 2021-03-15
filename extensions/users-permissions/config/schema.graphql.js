@@ -1,14 +1,4 @@
 module.exports = {
-  type: {
-    User: false,
-    UsersPermissionsRole: false,
-    UsersPermissionsMe: false,
-    UsersPermissionsLoginPayload: false,
-    UploadFile: false,
-    UserPermissionsPasswordPayload: false,
-    UsersPermissionsLoginInput: false,
-    CreateUserInput: false,
-  },
   resolver: {
     Query: {
       user: false,

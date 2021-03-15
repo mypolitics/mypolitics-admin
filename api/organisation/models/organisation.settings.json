@@ -1,0 +1,38 @@
+{
+  "kind": "collectionType",
+  "collectionName": "organisations",
+  "info": {
+    "name": "Organisation",
+    "description": ""
+  },
+  "options": {
+    "increments": true,
+    "timestamps": true,
+    "draftAndPublish": true
+  },
+  "attributes": {
+    "name": {
+      "type": "string"
+    },
+    "logo": {
+      "model": "file",
+      "via": "related",
+      "allowedTypes": [
+        "images"
+      ],
+      "plugin": "upload",
+      "required": false
+    },
+    "talks": {
+      "collection": "talk",
+      "via": "organisations"
+    },
+    "politicians": {
+      "collection": "politician",
+      "via": "organisation"
+    },
+    "shortname": {
+      "type": "string"
+    }
+  }
+}
