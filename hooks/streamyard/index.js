@@ -95,10 +95,12 @@ const init = async (data, image) => {
     image,
   };
 
-  await createOutput({
-    ...outputData,
-    outputType: 'facebook'
-  });
+  if (data.type === "classic") {
+    await createOutput({
+      ...outputData,
+      outputType: 'facebook'
+    });
+  }
 
   const { data: outputResult } = await createOutput({
     ...outputData,

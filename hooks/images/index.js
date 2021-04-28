@@ -8,11 +8,11 @@ const btoa = function (str) {
 
 const buildData = async (data) => {
   const politicians = await strapi.query('politician').find({
-    id_in: data.politicians,
+    id_in: data.politicians || [],
   }, ['organisation']);
 
   const organisations = await strapi.query('organisation').find({
-    id_in: data.organisations
+    id_in: data.organisations || []
   });
 
   const date = moment(data.start).locale("pl").format('D.MM (dddd) HH:mm')
@@ -42,7 +42,8 @@ const buildData = async (data) => {
       }
     },
     'interview': async () => {
-      const [firstName, lastName] = politicians[0].name.split(" ");
+      const names = politicians[0].name.split(" ");
+      const [firstName, lastName] = names.length === 2 ? names : names.slice(1);
 
       return {
         template: 'interview',
@@ -57,7 +58,8 @@ const buildData = async (data) => {
       }
     },
     'expert': async () => {
-      const [firstName, lastName] = politicians[0].name.split(" ");
+      const names = politicians[0].name.split(" ");
+      const [firstName, lastName] = names.length === 2 ? names : names.slice(1);
 
       return {
         template: 'oe',
@@ -72,14 +74,16 @@ const buildData = async (data) => {
     'ring': async () => {
       const persons = politicians.map(async (p) => {
         const [firstName, lastName] = p.name.split(" ");
+        const orgData = !!p?.organisation ? {
+          partyName: p.organisation.name,
+          partySrc: p.organisation.logo.url
+        } : {};
 
         return {
           firstName,
           lastName,
-          date,
           imageSrc: p.image.url,
-          partyName: p.organisation.name,
-          partySrc: p.organisation.logo.url
+          ...orgData
         }
       });
 
@@ -91,18 +95,12 @@ const buildData = async (data) => {
       }
     }
   }
-}
+};
 
-const getImage = async (data) => {
-  const func = (await buildData(data))[data.type];
-  const params = await func();
-  params.data = btoa(unescape(encodeURIComponent(
-    JSON.stringify(params.data)
-  )));
-
-  const BASE_URL = process.env.NODE_ENV === "development"
+const getImage = async (params) => {
+  const BASE_URL = process.env.NODE_ENV !== "production"
     ? "http://localhost:5000"
-    : "http://api-v3.mypolitics.pl/";
+    : "https://api-v3.mypolitics.pl";
 
   const req = await axios.get(`${BASE_URL}/utils/images`, {
     params,
@@ -131,10 +129,21 @@ const getImage = async (data) => {
   }
 };
 
+const getTalkImage = async (data) => {
+  const func = (await buildData(data))[data.type];
+  const params = await func();
+  params.data = btoa(unescape(encodeURIComponent(
+    JSON.stringify(params.data)
+  )));
+
+  return getImage(params);
+};
+
 module.exports = strapi => {
   return {
     async initialize() {
-      strapi.services.images = getImage
+      strapi.services.getTalkImage = getTalkImage
+      strapi.services.getImage = getImage
     },
   };
 };
