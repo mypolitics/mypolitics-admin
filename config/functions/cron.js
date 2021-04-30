@@ -97,7 +97,8 @@ module.exports = {
         await entityManager.publish(entity, 'poll')
       }
     },
-    '*/1 * * * *': async () => {
+  },
+  '*/1 * * * *': async () => {
       const entityManager = getService('entity-manager');
       const draftPostsToPublish = await strapi.api.smpost.services.smpost.find({
         _publicationState: 'preview',
@@ -106,5 +107,4 @@ module.exports = {
 
       draftPostsToPublish.forEach(entity => entityManager.publish(entity, 'smpost'));
     },
-  }
 };
