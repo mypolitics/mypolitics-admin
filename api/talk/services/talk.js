@@ -57,7 +57,7 @@ const buildDescription = async (data, { withPostamble = false, inFuture = false,
     const dateBase = moment(data.start);
     const dayName = dayDeclination[dateBase.day()];
 
-    const date = moment(data.start).locale("pl").format(`[To już ${dayName}] (D.MM) o HH:mm!`);
+    const date = moment(data.start).utcOffset(120).locale("pl").format(`[To już ${dayName}] (D.MM) o HH:mm!`);
     paragraphs.push(date)
   }
 

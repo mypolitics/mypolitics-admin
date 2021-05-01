@@ -15,7 +15,7 @@ const buildData = async (data) => {
     id_in: data.organisations || []
   });
 
-  const date = moment(data.start).locale("pl").format('D.MM (dddd) HH:mm')
+  const date = moment(data.start).utcOffset(120).locale("pl").format('D.MM (dddd) HH:mm')
 
   return {
     'mvsp': async () => {

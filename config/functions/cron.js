@@ -51,7 +51,7 @@ module.exports = {
             2: ` ${politiciansNames[0]} VS ${politiciansNames[1]}`
           }
 
-          return `${moment(start).format("HH:mm")}${title[politicians.length]} ${hashtags[type]}`
+          return `${moment(start).utcOffset(120).format("HH:mm")}${title[politicians.length]} ${hashtags[type]}`
         }))
       ].join("\n\n");
 
@@ -66,6 +66,7 @@ module.exports = {
       tz: 'Europe/Warsaw',
     },
     task: async () => {
+      return;
       const country = strapi.services.europpeelects.getRandomCountry();
       const pollExists = async ({sample, polling_firm, commissioner, fieldwork_start, fieldwork_end}) =>
         (await strapi.query('poll').find({
@@ -99,12 +100,14 @@ module.exports = {
     },
   },
   '*/1 * * * *': async () => {
-      const entityManager = getService('entity-manager');
-      const draftPostsToPublish = await strapi.api.smpost.services.smpost.find({
-        _publicationState: 'preview',
-        publish_on_lt: new Date(),
-      });
+    const entityManager = getService('entity-manager');
+    const draftPostsToPublish = await strapi.api.smpost.services.smpost.find({
+      _publicationState: 'preview',
+      publish_on_lt: new Date(),
+    });
 
-      draftPostsToPublish.forEach(entity => entityManager.publish(entity, 'smpost'));
+    draftPostsToPublish
+      .filter(entity => !entity.published_at)
+      .forEach(entity => entityManager.publish(entity, 'smpost'));
     },
 };
