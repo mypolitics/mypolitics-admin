@@ -50,19 +50,28 @@ const createBroadcast = async (data) => {
   });
 };
 
-const createOutput = async ({ data, id, description, image, outputType }) => {
+const buildForm = ({ data, description, image, outputType }, { withDestination = true }) => {
   const formData = new FormData();
 
   formData.append('title', buildTitle(data));
   formData.append('description', description);
-  formData.append('privacy', 'public');
-  formData.append('destinationId', destinations[outputType]);
+  formData.append('privacy', data?.published_at ? 'public' : 'unlisted');
   formData.append('csrfToken', strapi.config.get('hook.settings.streamyard').csrf);
 
   if (outputType === 'youtube') {
     formData.append('image', image, 'blob.png');
     formData.append('plannedStartTime', new Date(data.start).toUTCString());
   }
+
+  if (withDestination) {
+    formData.append('destinationId', destinations[outputType]);
+  }
+
+  return formData;
+}
+
+const createOutput = async ({ id, ...formParams }) => {
+  const formData = buildForm(formParams);
 
   return await axios.post(`https://streamyard.com/api/broadcasts/${id}/outputs`, formData, {
     method: 'POST',
@@ -72,6 +81,27 @@ const createOutput = async ({ data, id, description, image, outputType }) => {
       'Content-Type': `multipart/form-data; boundary=${formData._boundary}`
     },
   })
+};
+
+const updateOutputs = async ({ id, ...formParams }) => {
+  const { data } = await axios.get(`https://streamyard.com/api/broadcasts/${id}`, {
+    withCredentials: true,
+    headers,
+  })
+
+  for (const outputKey in data.outputs) {
+    const { destinationId, platform } = data.outputs[outputKey];
+    const formData = buildForm({ ...formParams, outputType: platform }, { withDestination: false });
+
+    await axios.post(`https://streamyard.com/api/broadcasts/${id}/destinations/${destinationId}`, formData, {
+      method: 'POST',
+      withCredentials: true,
+      headers: {
+        ...headers,
+        'Content-Type': `multipart/form-data; boundary=${formData._boundary}`
+      },
+    })
+  }
 };
 
 const init = async (data, image) => {
@@ -95,13 +125,6 @@ const init = async (data, image) => {
     image,
   };
 
-  if (data.type === "classic") {
-    await createOutput({
-      ...outputData,
-      outputType: 'facebook'
-    });
-  }
-
   const { data: outputResult } = await createOutput({
     ...outputData,
     outputType: 'youtube'
@@ -110,10 +133,34 @@ const init = async (data, image) => {
   data.url = outputResult.output.platformLink;
 };
 
+const update = async (data, image) => {
+  if (!data.streamyard_id) {
+    return;
+  }
+
+  const description = await strapi.services.talk.buildDescription(data, {
+    withPostamble: true,
+    inFuture: false,
+    withUrl: false
+  });
+
+  const outputData = {
+    data,
+    id: data.streamyard_id,
+    description,
+    image,
+  };
+
+  await updateOutputs(outputData);
+};
+
 module.exports = strapi => {
   return {
     async initialize() {
-      strapi.services.streamyard = init
+      strapi.services.streamyard = {
+        init,
+        update,
+      }
     },
   };
 };

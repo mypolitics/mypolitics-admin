@@ -19,6 +19,8 @@
     "ckeditor-build-with-simple-upload-provider-strapi": "^1.0.7",
     "fb": "^2.0.0",
     "minio": "^7.0.17",
+    "node-html-parser": "^3.2.0",
+    "node-html-to-image": "^3.1.0",
     "sharp": "^0.28.1",
     "slugify": "^1.4.6",
     "strapi": "3.5.0",

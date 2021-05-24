@@ -1,86 +1,134 @@
-const axios = require('axios');
+const axios = require("axios");
+const HTMLParser = require('node-html-parser');
 
-const countries = {
-  'de-N': 0.2,
-  'pl-N': 1,
-};
+const postsIds = [];
 
-const getRandomCountry = () => {
-  const rand = Math.random();
-  return Object.entries(countries).find(([_, w]) => rand < w)[0]
+const Country = {
+  Germany: "de",
+  Hungary: "hu",
+  France: "fr",
 };
 
 const partiesIds = {
-  "de": {
-    "Union": "607454b7d58a790d2c5df350",
-    "SPD": "607455d3d58a790d2c5df357",
-    "Alternative für Deutschland": "60745616d58a790d2c5df35a",
-    "FDP": "607456e7d58a790d2c5df360",
-    "DIE LINKE": "607456acd58a790d2c5df35d",
-    "BÜNDNIS 90/DIE GRÜNEN": "6074556bd58a790d2c5df353",
-    "Other": "606b7ab02583834ef83945dc"
+  [Country.Germany]: {
+    "cdu/csu": "607454b7d58a790d2c5df350",
+    spd: "607455d3d58a790d2c5df357",
+    "afd": "60745616d58a790d2c5df35a",
+    fdp: "607456e7d58a790d2c5df360",
+    "linke": "607456acd58a790d2c5df35d",
+    "grüne": "6074556bd58a790d2c5df353",
+    other: "606b7ab02583834ef83945dc",
   },
-  "pl": {
-    "Prawo i Sprawiedliwość": "60402ed2e1eb1925a49ac947",
-    "Platforma Obywatelska": "604031bae1eb1925a49ac94e",
-    "Kukiz’15": "60403233e1eb1925a49ac959",
-    ".Nowoczesna": "60402e9ce1eb1925a49ac943",
-    "Polskie Stronnictwo Ludowe": "60403245e1eb1925a49ac95b",
-    "KORWiN": "6040328be1eb1925a49ac961",
-    "Lewica Razem": "60402eb4e1eb1925a49ac945",
-    "Zjednoczona Prawica": "606def3cb30af31b24251de0",
-    "Koalicja Obywatelska": "606c7d99ea820531f0a52642",
-    "Lewica": "60403171e1eb1925a49ac949",
-    "Koalicja Polska": "60403245e1eb1925a49ac95b",
-    "Konfederacja": "606c7dcbea820531f0a52645",
-    "Polska 2050": "606c7d7cea820531f0a5263f",
-    "Other": "606b7ab02583834ef83945dc",
+  [Country.Hungary]: {
+    "fidesz": "6093a97fbe041d0012d8bb49",
+    "dk": "6093abc0be041d0012d8bb55",
+    "jobbik": "6093aab6be041d0012d8bb4f",
+    "mszp": "6093ab57be041d0012d8bb52",
+    "momentum": "6089cdaf96d5670012c427cb",
+    other: "606b7ab02583834ef83945dc",
+  },
+  [Country.France]: {
+    "rn": "60923cfebe041d0012d8baeb",
+    "lrem": "60923742be041d0012d8baca",
+    "fi": "60923a6cbe041d0012d8bad9",
+    "lr": "60924351be041d0012d8bb0f",
+    other: "606b7ab02583834ef83945dc",
+  },
+};
+
+const titleRegex = new RegExp(`^(${Object.keys(Country).join("|")}),\\s+(.+)\\s+poll:`, 'gm')
+const valuesRegex = /(?:^|\()(\S+)[-~→].+\)?: (\d{1,4})(?:%|$)/gm;
+const fieldworkRegex = /^Fieldwork: (?:(.+)\s?-\s?)?(.+)$/gm;
+const sampleSizeRegex = /^Sample size: ([\d,]+)/gm;
+const matchAllValues = (str, regex) => [...str.matchAll(regex)];
+
+const getStartEnd = (text) => {
+  let [, start, end] = matchAllValues(text, fieldworkRegex)[0];
+  end = new Date(Date.parse(end));
+
+  if (!start) {
+    start = end;
+  } else {
+    let [day, month, year] = start.split(" ");
+    month = month ? month : end.getMonth();
+    year = year ? year : end.getFullYear();
+    start = new Date([year, month, day].join("-"));
   }
-}
-
-const mapRowToModel = ({ row, topRow, country }) => {
-  const [polling_firm, commissioner, fieldwork_start, fieldwork_end, scope, sample] = row;
-  const countryMain = country.split("-")[0];
-
-  const party_percent = topRow.map((key, index) => {
-    const organisation = partiesIds[countryMain]?.[key];
-    const value = row[index].slice(0, -1).replace(".", ",");
-    const available = row[index] !== "Not Available";
-    return organisation && available ? { value, organisation } : null;
-  }).filter(v => !!v);
 
   return {
-    title: '#Sondaż',
-    polling_firm,
-    commissioner: commissioner.split(".")[0],
-    fieldwork_start: new Date(fieldwork_start),
-    fieldwork_end: new Date(fieldwork_end),
-    scope: scope.toLowerCase(),
-    sample,
-    country: countryMain,
-    party_percent,
-    source: 'EuropeElects',
+    start,
+    end
   }
 }
 
-const getPollsData = async ({ country }) => {
-  const { data } = await axios.get(`https://filipvanlaenen.github.io/eopaod/${country}.csv`);
+const getPartyPercent = (text, countryCode) => {
+  const otherParty = partiesIds[countryCode].other;
+  const partiesValues = matchAllValues(text, valuesRegex);
+  const allParties = partiesValues.map(([_, shortname, value]) => {
+    const organisation = partiesIds[countryCode]?.[shortname.toLowerCase()];
+    return { value, organisation };
+  });
 
-  const rows = data.split("\n").map(r => r.split(","));
-  const topRow = rows[0];
+  const partiesWithOrg = allParties.filter(({ organisation }) => !!organisation);
 
-  return rows
-    .slice(1, 4)
-    .map(row => mapRowToModel({row, topRow, country}));
+  const partiesWithOrgSum = partiesWithOrg
+    .reduce((prev, curr) => {
+      const getVal = obj => parseFloat(obj.value);
+      return prev + getVal(curr)
+    }, 0);
+
+  const otherParties = allParties
+    .filter(({ organisation }) => !organisation)
+    .reduce((prev, curr) => {
+      const getVal = obj => parseFloat(obj.value);
+      return {
+        organisation: otherParty,
+        value: getVal(prev) + getVal(curr)
+      };
+    }, { organisation: otherParty, value: 100 - partiesWithOrgSum });
+  
+  return allParties
+    .filter(({ organisation }) => !!organisation)
+    .concat(otherParties.value > 0 ? otherParties : [])
 }
 
-module.exports = strapi => {
+const parsePost = (text) => {
+  const [, country, pollComm] = matchAllValues(text, titleRegex)[0];
+  const [polling_firm, commissioner] = pollComm.split(" for ");
+  const [_, sample] = matchAllValues(text, sampleSizeRegex)[0];
+  const { start, end } = getStartEnd(text);
+  const countryCode = Country[country];
+  const party_percent = getPartyPercent(text, countryCode);
+
+  return {
+    title: `#Sondaż`,
+    sample: parseInt(sample.replace(",", ""), 10),
+    country: countryCode,
+    party_percent,
+    polling_firm,
+    commissioner,
+    fieldwork_start: start,
+    fieldwork_end: end,
+    scope: "national",
+    source: "EuropeElects",
+  };
+};
+
+const postToPollOrNull = text => {
+  try {
+    return parsePost(text);
+  } catch (e) {
+    return null;
+  }
+};
+
+module.exports = (strapi) => {
   return {
     async initialize() {
-      strapi.services.europpeelects = {
-        getPollsData,
-        getRandomCountry
-      }
+      strapi.services.europeelects = {
+        parsePost,
+        postToPollOrNull,
+      };
     },
   };
 };

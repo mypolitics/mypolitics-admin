@@ -4,8 +4,8 @@ module.exports = ({ env }) => ({
     providerOptions: {
       accessKey: env('MINIO_ACCESS'),
       secretKey: env('MINIO_SECRET'),
-      endpoint: 'https://files.mypolitics.pl',
-      bucket: 'mypolitics2',
+      endpoint: env('MINIO_END_POINT'),
+      bucket: 'mypolitics-cdn',
     },
   },
 });

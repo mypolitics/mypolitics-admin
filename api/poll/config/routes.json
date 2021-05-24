@@ -33,6 +33,14 @@
       }
     },
     {
+      "method": "POST",
+      "path": "/polls/ee",
+      "handler": "poll.europeElects",
+      "config": {
+        "policies": []
+      }
+    },
+    {
       "method": "PUT",
       "path": "/polls/:id",
       "handler": "poll.update",

@@ -33,34 +33,41 @@ const onChange = async (data) => {
   data.description = await strapi.services.poll.buildDescription(data, { twitter: false });
   data.description_twitter = await strapi.services.poll.buildDescription(data, { twitter: true });
 
-  const params = {
-    template: 'poll',
-    data: {
-      chips: data.chips.split(";"),
-      title: data.title,
-      country: `${API_URL}flags/${data.country}.png`,
-      parties: data.party_percent
-        .map((p) => {
-        const org = organisations.find(({ id }) => id === p.organisation);
-        const color = org.color || "#00B3DB";
+  const parties = data.party_percent
+    .map((p) => {
+    const org = organisations.find(({ id }) => id === p.organisation);
+    const color = org.color || "#00B3DB";
 
-        return {
-          logo: org.logo.url,
-          value: p.value,
-          shadowColor: hexToRGB(color, 0.3),
-          height: (parseInt(p.value, 10)/maxValue) * HEIGHT_BASE,
-          color,
-        }
-      })
+    return {
+      logo: org.logo.url,
+      value: p.value,
+      shadowColor: hexToRGB(color, 0.3),
+      height: (parseInt(p.value, 10)/maxValue) * HEIGHT_BASE,
+      color,
     }
+  });
+
+  const content = {
+    chips: data.chips.split(";"),
+    title: data.title,
+    country: `${API_URL}flags/${data.country}.png`,
+    parties,
   };
 
-  params.data = btoa(unescape(encodeURIComponent(
-    JSON.stringify(params.data)
-  )));
-
-  const { image, buffer } = await strapi.services.getImage(params);
+  const { image } = await strapi.services.getImage({ templateName: 'poll', content });
   data.image = image;
+
+  const { height, width, url: src } = image;
+  const notSquare = (width / height) !== 1;
+
+  if (notSquare) {
+    const { image: squareImage } = await strapi.services.getImage({
+      templateName: 'square',
+      content: { src }
+    })
+
+    data.image = squareImage;
+  }
 };
 
 module.exports = {

@@ -28,6 +28,9 @@
     "publish_on": {
       "type": "datetime",
       "required": true
+    },
+    "description_twitter": {
+      "type": "text"
     }
   }
 }

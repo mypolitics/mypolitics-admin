@@ -1,122 +1,58 @@
-const axios = require('axios');
-const _ = require('lodash');
-const moment = require('moment');
+const _ = require("lodash");
+const nodeHtmlToImage = require("node-html-to-image");
+const { optimize } = strapi.plugins.upload.services["image-manipulation"];
 
-const btoa = function (str) {
-  return new Buffer.from(str, 'binary').toString('base64');
-};
+const getImage = async ({ templateName, content }) => {
+  const template = (await import(`./templates/${templateName}.js`)).default;
+  const chromeExecutablePath = process.env.NODE_ENV === "production"
+    ? "google-chrome-stable"
+    : "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome";
 
-const buildData = async (data) => {
-  const politicians = await strapi.query('politician').find({
-    id_in: data.politicians || [],
-  }, ['organisation']);
+  const sizes = {
+    poll: () => {
+      const width = content.parties.length * (96 + 16) + 256;
+      return [Math.max(width, 1056), 1056];
+    },
+    square: () => [900, 900],
+    default: () => [900, 500],
+  };
 
-  const organisations = await strapi.query('organisation').find({
-    id_in: data.organisations || []
+  const [width, height] = (sizes[templateName] || sizes.default)();
+
+  const imageData = await nodeHtmlToImage({
+    content,
+    puppeteerArgs: {
+      args: ["--no-sandbox"],
+      executablePath: chromeExecutablePath,
+    },
+    html: `
+      <html>
+        <head>
+          <style>
+            body {
+              width: ${width}px;
+              height: ${height}px;
+            }
+          </style>
+          <link rel="preconnect" href="https://fonts.gstatic.com">
+          <link href="https://fonts.googleapis.com/css2?family=Rubik:wght@300;700&display=swap" rel="stylesheet">
+          <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;700&display=swap" rel="stylesheet">
+        </head>
+        <body>
+          ${template}
+        </body>
+      </html>
+    `,
   });
 
-  const date = moment(data.start).utcOffset(120).locale("pl").format('D.MM (dddd) HH:mm')
+  const { buffer, info } = await optimize(imageData);
 
-  return {
-    'mvsp': async () => {
-      const [firstName, lastName] = politicians[0].name.split(" ");
-
-      return {
-        template: 'mvsp',
-        data: {
-          firstName,
-          lastName,
-          date,
-          imageSrc: politicians[0].image.url
-        }
-      }
-    },
-    'classic': async () => {
-      return {
-        template: 'dm',
-        data: {
-          topic: data.title,
-          date,
-          organisations: organisations.map(o => o.logo.url)
-        }
-      }
-    },
-    'interview': async () => {
-      const names = politicians[0].name.split(" ");
-      const [firstName, lastName] = names.length === 2 ? names : names.slice(1);
-
-      return {
-        template: 'interview',
-        data: {
-          firstName,
-          lastName,
-          date,
-          imageSrc: politicians[0].image.url,
-          partyName: politicians[0].organisation.name,
-          partySrc: politicians[0].organisation.logo.url,
-        }
-      }
-    },
-    'expert': async () => {
-      const names = politicians[0].name.split(" ");
-      const [firstName, lastName] = names.length === 2 ? names : names.slice(1);
-
-      return {
-        template: 'oe',
-        data: {
-          firstName,
-          lastName,
-          date,
-          imageSrc: politicians[0].image.url
-        },
-      }
-    },
-    'ring': async () => {
-      const persons = politicians.map(async (p) => {
-        const [firstName, lastName] = p.name.split(" ");
-        const orgData = !!p?.organisation ? {
-          partyName: p.organisation.name,
-          partySrc: p.organisation.logo.url
-        } : {};
-
-        return {
-          firstName,
-          lastName,
-          imageSrc: p.image.url,
-          ...orgData
-        }
-      });
-
-      return {
-        template: 'rp',
-        data: {
-          persons: await Promise.all(persons),
-        }
-      }
-    }
-  }
-};
-
-const getImage = async (params) => {
-  const BASE_URL = process.env.NODE_ENV !== "production"
-    ? "http://localhost:5000"
-    : "https://api-v3.mypolitics.pl";
-
-  const req = await axios.get(`${BASE_URL}/utils/images`, {
-    params,
-    responseType: 'arraybuffer'
-  });
-
-  const { optimize } = strapi.plugins.upload.services['image-manipulation'];
-
-  const { buffer, info } = await optimize(Buffer.from(req.data, 'binary'));
-
-  const formattedFile = strapi.plugins['upload'].services.upload.formatFileInfo(
+  const formattedFile = strapi.plugins["upload"].services.upload.formatFileInfo(
     {
-      filename: 'talk.png',
-      type: 'image/png',
-      size: req.data.length,
-    },
+      filename: "blob.png",
+      type: "image/png",
+      size: imageData.size,
+    }
   );
 
   const file = _.assign(formattedFile, info, {
@@ -125,25 +61,16 @@ const getImage = async (params) => {
 
   return {
     buffer,
-    image: await strapi.plugins['upload'].services.upload.uploadFileAndPersist(file),
-  }
+    image: await strapi.plugins["upload"].services.upload.uploadFileAndPersist(
+      file
+    ),
+  };
 };
 
-const getTalkImage = async (data) => {
-  const func = (await buildData(data))[data.type];
-  const params = await func();
-  params.data = btoa(unescape(encodeURIComponent(
-    JSON.stringify(params.data)
-  )));
-
-  return getImage(params);
-};
-
-module.exports = strapi => {
+module.exports = (strapi) => {
   return {
     async initialize() {
-      strapi.services.getTalkImage = getTalkImage
-      strapi.services.getImage = getImage
+      strapi.services.getImage = getImage;
     },
   };
 };
