@@ -8,15 +8,8 @@ module.exports = {
       jwt: process.env.STREAMYARD_JWT,
       csrf: process.env.STREAMYARD_CSRF,
     },
-    twitter: {
+    europeelects: {
       enabled: true,
-      jwt: process.env.TWITTER_JWT,
-      csrf: process.env.TWITTER_CSRF,
-      cookie: process.env.TWITTER_COOKIE,
-    },
-    facebook: {
-      enabled: true,
-      accessToken: process.env.FACEBOOK_TOKEN,
     },
   },
 };

@@ -8,7 +8,7 @@
   "options": {
     "increments": true,
     "timestamps": true,
-    "draftAndPublish": true
+    "draftAndPublish": false
   },
   "attributes": {
     "name": {
@@ -24,8 +24,8 @@
       "required": false
     },
     "talks": {
-      "collection": "talk",
-      "via": "organisations"
+      "via": "organisations",
+      "collection": "talk"
     },
     "politicians": {
       "collection": "politician",
@@ -33,6 +33,39 @@
     },
     "shortname": {
       "type": "string"
+    },
+    "color": {
+      "type": "string"
+    },
+    "twitter": {
+      "type": "string"
+    },
+    "quarter": {
+      "type": "enumeration",
+      "enum": [
+        "red",
+        "blue",
+        "violet",
+        "green",
+        "center",
+        "NOT_APPLICABLE"
+      ],
+      "default": "NOT_APPLICABLE"
+    },
+    "ep_fraction": {
+      "type": "enumeration",
+      "enum": [
+        "EPP",
+        "S_and_D",
+        "RE",
+        "ID",
+        "G_EFA",
+        "ECR",
+        "LEFT",
+        "NI",
+        "NOT_APPLICABLE"
+      ],
+      "default": "NOT_APPLICABLE"
     }
   }
 }

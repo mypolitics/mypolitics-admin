@@ -1,103 +1,95 @@
 'use strict';
+const axios = require('axios');
 
-const onChange = async (data, { hard = false }) => {
-  const politicians = await strapi.query('politician').find({
-    id_in: data.politicians
-  }, ['organisation']);
-
-  if (data.politicians.length === 1 && data.type !== "expert") {
-    const { name } = politicians[0];
-    const inOrg = typeof politicians[0].organisation?.shortname !== "undefined";
-    const postamble = inOrg ? ` [${politicians[0].organisation.shortname}]` : '';
-
-    data.title = `${name}${postamble}`;
+const onChange = async (data) => {
+  const formatName = strapi.services.politician.formatName;
+  if (!data.type) {
+    return;
   }
 
-  if (data.politicians.length === 2) {
+  const politicians = await strapi.query('politician').find({
+    id_in: data.politicians || []
+  }, ['organisation']);
+
+  if (politicians.length === 1 && data.type !== "expert") {
+    data.title = formatName(politicians[0], { orgShortName: true });
+  }
+
+  if (politicians.length === 2) {
     const getLastNameAndOrg = (index) => {
-      const { name, organisation: { shortname: orgName } } = politicians[index];
+      const { name } = politicians[index];
+      const inOrg = typeof politicians[index].organisation?.shortname !== "undefined";
+      const postamble = inOrg ? ` [${politicians[index].organisation.shortname}]` : '';
       const [_, lastName] = name.split(' ');
-      return `${lastName.toUpperCase()} [${orgName}]`;
+      return `${lastName.toUpperCase()}${postamble}`;
     };
 
     data.title = `${getLastNameAndOrg(0)} VS ${getLastNameAndOrg(1)}`;
   }
 
-  const { image, buffer } = await strapi.services.images(data);
-  data.thumbnail = image;
-  console.log('TALK: Image initialized');
+  let buffer = undefined;
 
-  if (!hard) {
-    return;
+  if (!data.thumbnail) {
+    const { template: templateName, data: content } = await strapi.services.talk.buildImageData(data);
+    const { image, ...td } = await strapi.services.getImage({ templateName, content });
+    buffer = td.buffer;
+    data.thumbnail = image;
+  } else {
+    const { url: thumbnailUrl } = await strapi.query('plugins::upload.file').findOne({ _id: data.thumbnail });
+
+    buffer = await axios
+      .get(thumbnailUrl, {
+        responseType: 'arraybuffer'
+      })
+      .then(r => Buffer.from(r.data, 'binary'))
   }
 
-  await strapi.services.streamyard(data, buffer);
-  console.log('TALK: Streamyard initialized');
+  if (data.streamyard_id) {
+    await strapi.services.streamyard.update(data, buffer);
+  } else {
+    await strapi.services.streamyard.init(data, buffer);
+  }
 
-  const socialDescriptionNow = await strapi.services.talk.buildDescription(data, {
-    withPostamble: false,
-    inFuture: true,
-    withUrl: true
-  });
-
-  const socialDescriptionFuture = await strapi.services.talk.buildDescription(data, {
+  const descOptions = {
     withPostamble: false,
     inFuture: false,
     withUrl: true
-  });
+  };
 
-  if (!data.tt_post_id) {
-    const nowTime = (new Date()).getTime() + 5 * 60 * 1000;
-    const startTime = (new Date(data.start)).getTime();
+  const typeOpts = [
+    ['description', descOptions],
+    ['description_twitter', { ...descOptions, twitter: true }],
+    ['description_future', { ...descOptions, inFuture: true }],
+    ['description_future_twitter', { ...descOptions, inFuture: true, twitter: true }],
+  ];
 
-    const { data: nowPost } = await strapi.services.twitter.post({
-      status: socialDescriptionNow,
-      executeAt: nowTime,
-      medias: [buffer]
-    });
-
-    const { data: startPost } = await strapi.services.twitter.post({
-      status: socialDescriptionFuture,
-      executeAt: startTime,
-      medias: [buffer]
-    });
-
-    data.tt_post_id = `${nowPost},${startPost}`;
-  }
-  console.log('TALK: Twitter initialized');
-
-  if (!data.fb_post_id) {
-    const startTime = Math.round((new Date(data.start)).getTime() / 1000);
-
-    const nowPost = await strapi.services.facebook.post({
-      message: socialDescriptionNow,
-      mediaUrl: image.url,
-    });
-
-    const startPost = await strapi.services.facebook.post({
-      message: socialDescriptionFuture,
-      scheduledPublishTime: startTime,
-      mediaUrl: image.url,
-    });
-
-    data.fb_post_id = `${nowPost.post_id},${startPost.id}`;
-  }
-  console.log('TALK: Facebook initialized');
+  await Promise.all(
+    typeOpts.map(async ([key, opts]) => {
+      data[key] = await strapi.services.talk.buildDescription(data, opts);
+    })
+  );
 };
 
 module.exports = {
   lifecycles: {
+    beforeCreate: onChange,
     beforeUpdate: async (_, data) => {
+      if (Object.keys(data).toString() === "published_at") {
+        const dataObj = await strapi.query('talk').find({
+          id: _._id
+        }, ['thumbnail']);
+
+        data = {
+          ...dataObj[0],
+          ...data
+        }
+      }
+
       if (data.lang !== "pl") {
         return;
       }
 
-      const moreData = await strapi.query('talk').findOne({
-        id: data._id
-      });
-
-      const hard = moreData && moreData.published_at !== null;
-      await onChange(data, { hard });
+      await onChange(data);
     },
   },
 };

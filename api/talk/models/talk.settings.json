@@ -61,8 +61,8 @@
       "collection": "member"
     },
     "organisations": {
-      "via": "talks",
       "collection": "organisation",
+      "via": "talks",
       "dominant": true
     },
     "streamyard_id": {
@@ -74,6 +74,18 @@
     },
     "tt_post_id": {
       "type": "string"
+    },
+    "description": {
+      "type": "text"
+    },
+    "description_future": {
+      "type": "text"
+    },
+    "description_twitter": {
+      "type": "text"
+    },
+    "description_future_twitter": {
+      "type": "text"
     }
   }
 }

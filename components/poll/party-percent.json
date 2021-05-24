@@ -1,0 +1,17 @@
+{
+  "collectionName": "components_poll_party_percents",
+  "info": {
+    "name": "party_percent",
+    "icon": "bars",
+    "description": ""
+  },
+  "options": {},
+  "attributes": {
+    "organisation": {
+      "model": "organisation"
+    },
+    "value": {
+      "type": "string"
+    }
+  }
+}

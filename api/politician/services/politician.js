@@ -1,8 +1,13 @@
 'use strict';
 
-/**
- * Read the documentation (https://strapi.io/documentation/v3.x/concepts/services.html#core-services)
- * to customize this service
- */
+const formatName = (data, { twitter = false, orgShortName = false }) => {
+  const formatOrgName = strapi.services.organisation.formatName;
+  const org = typeof data.organisation !== "undefined" ? ` [${formatOrgName(data.organisation, { twitter, shortName: orgShortName })}]` : '';
+  const name = twitter && data.twitter ? `@${data.twitter}` : data.name;
 
-module.exports = {};
+  return `${name}${org}`;
+};
+
+module.exports = {
+   formatName
+};

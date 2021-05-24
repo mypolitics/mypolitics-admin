@@ -41,6 +41,9 @@
     "organisation": {
       "via": "politicians",
       "model": "organisation"
+    },
+    "twitter": {
+      "type": "string"
     }
   }
 }

@@ -8,7 +8,7 @@ COPY . .
 
 RUN npm install
 
-RUN npm build
+RUN npm run build
 
 EXPOSE 5000
 

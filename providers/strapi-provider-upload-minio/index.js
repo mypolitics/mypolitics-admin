@@ -39,8 +39,8 @@ module.exports = {
     return {
       upload: (file) => {
         return new Promise((resolve, reject) => {
-          const filename = (file.path ? `${file.path}.` : '') + 'cdnv2-' + `${file.hash}${file.ext}`;
-          const buffer = new Buffer(file.buffer, 'binary');
+          const filename = 'mypolitics2/' + (file.path ? `${file.path}.` : '') + 'public-' + `${file.hash}${file.ext}`;
+          const buffer = Buffer.from(file.buffer, 'binary');
 
           Minio.putObject(config.bucket, filename, buffer, (err, tag) => {
             if (err) {
@@ -55,7 +55,7 @@ module.exports = {
       },
       delete: (file) => {
         return new Promise((resolve, reject) => {
-          const filename = (file.path ? `${file.path}.` : '') + `${file.hash}${file.ext}`;
+          const filename = 'mypolitics2/' + (file.path ? `${file.path}.` : '') + `${file.hash}${file.ext}`;
 
           Minio.removeObject(config.bucket, filename, (err) => {
             if (err) {

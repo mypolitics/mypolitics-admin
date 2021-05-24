@@ -1,0 +1,36 @@
+{
+  "kind": "collectionType",
+  "collectionName": "smposts",
+  "info": {
+    "name": "smpost",
+    "description": ""
+  },
+  "options": {
+    "increments": true,
+    "timestamps": true,
+    "draftAndPublish": true
+  },
+  "attributes": {
+    "description": {
+      "type": "text",
+      "required": true,
+      "maxLength": 280
+    },
+    "image": {
+      "model": "file",
+      "via": "related",
+      "allowedTypes": [
+        "images"
+      ],
+      "plugin": "upload",
+      "required": true
+    },
+    "publish_on": {
+      "type": "datetime",
+      "required": true
+    },
+    "description_twitter": {
+      "type": "text"
+    }
+  }
+}
