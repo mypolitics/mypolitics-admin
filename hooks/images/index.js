@@ -6,7 +6,7 @@ const getImage = async ({ templateName, content }) => {
   const template = (await import(`./templates/${templateName}.js`)).default;
   const chromeExecutablePath =
     process.env.NODE_ENV === "production"
-      ? undefined
+      ? "/usr/bin/chromium-browser"
       : "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome";
 
   const sizes = {
