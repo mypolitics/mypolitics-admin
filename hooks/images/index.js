@@ -4,9 +4,10 @@ const { optimize } = strapi.plugins.upload.services["image-manipulation"];
 
 const getImage = async ({ templateName, content }) => {
   const template = (await import(`./templates/${templateName}.js`)).default;
-  const chromeExecutablePath = process.env.NODE_ENV === "production"
-    ? "google-chrome-stable"
-    : "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome";
+  const chromeExecutablePath =
+    process.env.NODE_ENV === "production"
+      ? undefined
+      : "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome";
 
   const sizes = {
     poll: () => {
