@@ -23,11 +23,18 @@
     "type": {
       "type": "enumeration",
       "enum": [
-        "classic",
-        "mvsp",
         "interview",
+        "ring",
+        "ptyg",
+        "lo",
+        "mvsp",
+        "classic",
+        "int_deb",
+        "dl",
+        "kp",
+        "qi",
         "expert",
-        "ring"
+        "pt"
       ]
     },
     "url": {

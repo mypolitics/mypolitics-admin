@@ -5,7 +5,9 @@ module.exports = `
   height: 500px;
   overflow: hidden;
   position: relative;
-  background: linear-gradient(74.82deg, #8E2DE2 0%, #4A00E0 100%);
+  background: linear-gradient(254.81deg, #3A00E0 0%, #E2A42D 100.01%),
+linear-gradient(74.82deg, #8E2DE2 0%, #4A00E0 100%);
+
   }
   .content-container {
   position: absolute;
@@ -38,7 +40,7 @@ module.exports = `
   height: auto;
   }
   .name-container {
-  background: #4E10A3;
+  background: #7433B1;
   padding: 24px;
   border-radius: 24px;
   color: #FFFFFF;
@@ -60,7 +62,7 @@ module.exports = `
   object-fit: cover;
   position: absolute;
   right: 0;
-  box-shadow: 0px 0px 32px #4F0EAA;
+  box-shadow: 0px 0px 32px #633663;
   border-top-left-radius: 200px;
   }
 </style>
@@ -68,7 +70,7 @@ module.exports = `
   <div class="content-container">
     <img src="https://fra1.digitaloceanspaces.com/mypolitics-cdn/mypolitics-3/public/assets/logotype3.png">
     <div class="logo-container">
-      <img src="https://fra1.digitaloceanspaces.com/mypolitics-cdn/mypolitics-3/public/assets/mvsp.png">
+      <img src="https://fra1.digitaloceanspaces.com/mypolitics-cdn/mypolitics-3/public/assets/qi.png">
     </div>
     <div class="name-container">
       <div>{{firstName}}</div>
@@ -77,4 +79,4 @@ module.exports = `
   </div>
   <img src="{{image.url}}" class="avatar">
 </div>
-`;
+`

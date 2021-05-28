@@ -164,21 +164,19 @@ module.exports = `
     <div class="orgs-wrapper" style="
 ">
         {{#each organisations}}
-        <img src="{{this}}">
+        <img src="{{logo.url}}">
         {{/each}}
     </div>
     
     <div class="topic">
         <span>Temat:</span>
-        <span>{{topic}}</span>
+        <span>{{title}}</span>
 </div>
             
 
             <div class="footer" style="
 ">
                 <div class="footer-inner">
-                    <span>{{date}}</span>
-                    <div class="divider"></div>
                     <svg xmlns="http://www.w3.org/2000/svg" width="232" height="41" viewBox="0 0 232 41" fill="none">
                         <g clip-path="url(#clip0)">
                             <path d="M37.8747 0.299999H43.3293C44.151 0.299999 44.817 0.961739 44.817 1.77805V6.70488C44.817 7.52118 44.151 8.18292 43.3293 8.18292H37.8747V0.299999Z" fill="#EEF2F3"></path>

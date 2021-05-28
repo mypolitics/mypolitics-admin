@@ -11,11 +11,18 @@ const onChange = async (data) => {
     id_in: data.politicians || []
   }, ['organisation']);
 
-  if (politicians.length === 1 && data.type !== "expert") {
-    data.title = formatName(politicians[0], { orgShortName: true });
+  if (politicians.length === 1) {
+    const politicianRawName = politicians[0].name;
+
+    const titles = {
+      "expert": data.title.includes(politicianRawName) ? data.title : `${politicianRawName} – ${data.title}`,
+      "default": formatName(politicians[0], { orgShortName: true })
+    }
+
+    data.title = titles[data.type] || titles.default;
   }
 
-  if (politicians.length === 2) {
+  if (politicians.length === 2 && ["ring", "lo"].includes(data.type)) {
     const getLastNameAndOrg = (index) => {
       const { name } = politicians[index];
       const inOrg = typeof politicians[index].organisation?.shortname !== "undefined";
@@ -24,7 +31,12 @@ const onChange = async (data) => {
       return `${lastName.toUpperCase()}${postamble}`;
     };
 
-    data.title = `${getLastNameAndOrg(0)} VS ${getLastNameAndOrg(1)}`;
+    const separator = {
+      "ring": "VS",
+      "lo": "&"
+    }[data.type];
+
+    data.title = `${getLastNameAndOrg(0)} ${separator} ${getLastNameAndOrg(1)}`;
   }
 
   let buffer = undefined;
@@ -83,10 +95,6 @@ module.exports = {
           ...dataObj[0],
           ...data
         }
-      }
-
-      if (data.lang !== "pl") {
-        return;
       }
 
       await onChange(data);
