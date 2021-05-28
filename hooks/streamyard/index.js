@@ -71,7 +71,7 @@ const buildForm = ({ data, description, image, outputType }, { withDestination =
 }
 
 const createOutput = async ({ id, ...formParams }) => {
-  const formData = buildForm(formParams);
+  const formData = buildForm(formParams, { withDestination: true });
 
   return await axios.post(`https://streamyard.com/api/broadcasts/${id}/outputs`, formData, {
     method: 'POST',

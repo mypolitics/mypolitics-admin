@@ -29,7 +29,7 @@ module.exports = {
       return;
     }
 
-    const post = ctx.request.body;
+    const post = ctx.request.body.text;
     const poll = strapi.services.europeelects.postToPollOrNull(post);
 
     if (!poll || (await pollExists(poll))) {

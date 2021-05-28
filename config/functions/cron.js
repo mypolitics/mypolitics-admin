@@ -7,17 +7,29 @@ const getService = (name) => {
   return prop(`content-manager.services.${name}`, strapi.plugins);
 };
 
-const everydayLives = async () => {
+const productionWrapper = async (func) => {
   if (process.env.NODE_ENV !== "production") {
     return;
   }
+  return func();
+}
 
+const productionWrapper2 = async (func) => {
+  if (process.env.NODE_ENV === "production") {
+    return;
+  }
+  return func();
+}
+
+const everydayLives = async () => {
   const tommorowDate = moment().add(1, "days");
   const formatName = strapi.services.politician.formatName;
+  const getHashtag = strapi.services.talk.getHashtag;
 
   const talks = await strapi.query("talk").find({
     start_gt: tommorowDate.startOf("day").toDate(),
     end_lt: tommorowDate.endOf("day").toDate(),
+    _publicationState: "live"
   });
 
   for (const key in talks) {
@@ -33,14 +45,6 @@ const everydayLives = async () => {
     return;
   }
 
-  const hashtags = {
-    classic: "#DebataMłodzieżówek",
-    mvsp: "#MłodzieżVsPolitycy",
-    interview: "#WywiadMyPolitics",
-    expert: "#OkiemEksperta",
-    ring: "#RingPolityczny",
-  };
-
   const description = [
     "Jutro w #myPolitics!",
     ...talks.map(({ start, type, politicians }) => {
@@ -55,7 +59,7 @@ const everydayLives = async () => {
 
       return `${moment(start).utcOffset(120).format("HH:mm")}${
         title[politicians.length]
-      } ${hashtags[type]}`;
+      } ${getHashtag({ type })}`;
     }),
   ].join("\n\n");
 
@@ -63,10 +67,6 @@ const everydayLives = async () => {
 };
 
 const autoPublishSmPosts = async () => {
-  if (process.env.NODE_ENV !== "production") {
-    return;
-  }
-
   const entityManager = getService("entity-manager");
   const draftPostsToPublish = await strapi.api.smpost.services.smpost.find({
     _publicationState: "preview",
@@ -78,12 +78,64 @@ const autoPublishSmPosts = async () => {
     .forEach((entity) => entityManager.publish(entity, "smpost"));
 };
 
+const talkProcess = async () => {
+  const currentMoment = new Date();
+  const toMinutesFromStart = date => Math.abs(new Date(date) - currentMoment) / 60 / 1000;
+  const getHashtag = strapi.services.talk.getHashtag;
+
+  const publishOnStart = async ({ start, description, description_twitter, thumbnail }) => {
+    const minutesFromStart = toMinutesFromStart(start);
+    const alreadyPublished = await strapi.query('smpost').findOne({
+      _publicationState: "preview",
+      description,
+    });
+
+    if (minutesFromStart > 10 || alreadyPublished) {
+      return;
+    }
+
+    await strapi.api.smpost.services.smpost.create({
+      description,
+      description_twitter,
+      image: thumbnail._id,
+      publish_on: currentMoment,
+      published_at: null,
+    });    
+  }
+
+  const publishLiveComments = async (data) => {
+    const minutesFromStart = toMinutesFromStart(start);
+
+    if ((minutesFromStart % 7) !== 0) {
+      return;
+    }
+
+    await axios.post(process.env.TWEET_YT_WEBHOOK, {
+      hashtag: getHashtag(data).slice(1),
+      youtube_id: data.url.split("?v=").pop()
+    });
+  }
+
+  const currentTalks = await strapi.api.talk.services.talk.find({
+    end_gt: currentMoment,
+    start_lt: currentMoment,
+  });
+
+  await Promise.all(currentTalks.map(async (data) => {
+    await publishOnStart(data);
+    await publishLiveComments(data);
+  }));
+}
+
 module.exports = {
   "37 21 * * *": {
     options: {
       tz: "Europe/Warsaw",
     },
-    task: everydayLives,
+    task: () => productionWrapper(everydayLives),
   },
-  "*/1 * * * *": autoPublishSmPosts,
+  "*/1 * * * *": async () => {
+    productionWrapper(autoPublishSmPosts)
+    productionWrapper(talkProcess)
+  }
 };

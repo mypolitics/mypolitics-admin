@@ -1,7 +1,12 @@
-const axios = require("axios");
-const HTMLParser = require('node-html-parser');
+if (!String.prototype.replaceAll) {
+	String.prototype.replaceAll = function(str, newStr) {
+		if (Object.prototype.toString.call(str).toLowerCase() === '[object regexp]') {
+			return this.replace(str, newStr);
+		}
 
-const postsIds = [];
+		return this.replace(new RegExp(str, 'g'), newStr);
+	};
+}
 
 const Country = {
   Germany: "de",
@@ -21,10 +26,13 @@ const partiesIds = {
   },
   [Country.Hungary]: {
     "fidesz": "6093a97fbe041d0012d8bb49",
+    "fidesz-kdnp": "6093a97fbe041d0012d8bb49",
     "dk": "6093abc0be041d0012d8bb55",
     "jobbik": "6093aab6be041d0012d8bb4f",
     "mszp": "6093ab57be041d0012d8bb52",
     "momentum": "6089cdaf96d5670012c427cb",
+    "dk|mszp|m|lmp|p|jobbik": "60ad48848dbfad001376eb99",
+    "dk/mszp/m/lmp/p/jobbik": "60ad48848dbfad001376eb99",
     other: "606b7ab02583834ef83945dc",
   },
   [Country.France]: {
@@ -37,22 +45,46 @@ const partiesIds = {
 };
 
 const titleRegex = new RegExp(`^(${Object.keys(Country).join("|")}),\\s+(.+)\\s+poll:`, 'gm')
-const valuesRegex = /(?:^|\()(\S+)[-~→].+\)?: (\d{1,4})(?:%|$)/gm;
-const fieldworkRegex = /^Fieldwork: (?:(.+)\s?-\s?)?(.+)$/gm;
+const valuesRegex = /(?:^|\()(\S+)[-~→].+\)?: (\d{1,4})(?:%|$|\S)/gm;
+const fieldworkRegex = /^Field\s?work: (?:(.+)\s?[,–-]\s?)?(.+)$/gm;
 const sampleSizeRegex = /^Sample size: ([\d,]+)/gm;
 const matchAllValues = (str, regex) => [...str.matchAll(regex)];
+const toCorrectDate = date => {
+  date = date.replaceAll("/", "-").split("-");
+
+  const months = {
+    "01": "january",
+    "02": "february",
+    "03": "march",
+    "04": "april",
+    "05": "may",
+    "06": "june",
+    "07": "july",
+    "08": "august",
+    "09": "september",
+    "10": "october",
+    "11": "november",
+    "12": "december",
+  }
+
+  Object.keys(months).forEach(key => {
+    date[1] = date[1].replace(key, months[key])
+  })
+
+  return date.join("-");
+};
 
 const getStartEnd = (text) => {
-  let [, start, end] = matchAllValues(text, fieldworkRegex)[0];
+  let [, start, end] = (matchAllValues(text, fieldworkRegex)[0]).map(toCorrectDate);
   end = new Date(Date.parse(end));
 
   if (!start) {
     start = end;
   } else {
-    let [day, month, year] = start.split(" ");
+    let [day, month, year] = start.split("-");
     month = month ? month : end.getMonth();
     year = year ? year : end.getFullYear();
-    start = new Date([year, month, day].join("-"));
+    start = new Date([day, month, year].join("-"));
   }
 
   return {
@@ -64,7 +96,7 @@ const getStartEnd = (text) => {
 const getPartyPercent = (text, countryCode) => {
   const otherParty = partiesIds[countryCode].other;
   const partiesValues = matchAllValues(text, valuesRegex);
-  const allParties = partiesValues.map(([_, shortname, value]) => {
+  const allParties = partiesValues.map(([, shortname, value]) => {
     const organisation = partiesIds[countryCode]?.[shortname.toLowerCase()];
     return { value, organisation };
   });
@@ -95,7 +127,7 @@ const getPartyPercent = (text, countryCode) => {
 const parsePost = (text) => {
   const [, country, pollComm] = matchAllValues(text, titleRegex)[0];
   const [polling_firm, commissioner] = pollComm.split(" for ");
-  const [_, sample] = matchAllValues(text, sampleSizeRegex)[0];
+  const [, sample] = matchAllValues(text, sampleSizeRegex)[0];
   const { start, end } = getStartEnd(text);
   const countryCode = Country[country];
   const party_percent = getPartyPercent(text, countryCode);
@@ -118,6 +150,7 @@ const postToPollOrNull = text => {
   try {
     return parsePost(text);
   } catch (e) {
+    console.error(e)
     return null;
   }
 };
