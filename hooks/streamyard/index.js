@@ -2,27 +2,38 @@ const axios = require('axios');
 const _ = require('lodash');
 const FormData = require('form-data');
 
-const buildTitle = (data) => {
+const buildTitle = async (data) => {
   const getHashtag = strapi.services.talk.getHashtag;
+  const politicians = await strapi.query("politician").find(
+    { id_in: data.politicians || [] },
+    ["organisation"]
+  );
+
+  const organisationsShortnames = politicians
+    .filter(p => !!p?.organisation)
+    .map(p => p.organisation.shortname)
+    .join(", ");
 
   const config = {
-    classic: `${data.title} | DEBATA MŁODZIEŻÓWEK`,
-    dl: `DEBATA LIDERÓW | ${data.organisations.map(o => o.shortname).join(",")}`,
-    int_deb: `${data.title} | INTERNATIONAL DEBATE`,
-    kp: `Komentarz Polityczny | ${data.organisations.map(o => o.shortname).join(",")}`,
-    lo: `${data.title} | Lustrzane Odbicie`,
-    pt: `${data.title} | Polityczny Throwback`,
-    ptyg: `PODSUMOWANIE TYGODNIA | ${data.organisations.map(o => o.shortname).join(",")}`,
-    qi: `${data.title} | QUICKFIRE INTERVIEW`,
-    mvsp: `MŁODZIEŻ VS ${data.title.toUpperCase()}`,
-    interview: `${data.title} | #WywiadDnia`,
-    expert: `${data.title} | OKIEM EKSPERTA`,
-    ring: `${data.title} | RING POLITYCZNY`,
+    classic: () => `${data.title} | DEBATA MŁODZIEŻÓWEK`,
+    dl: () => `DEBATA LIDERÓW | ${organisationsShortnames}`,
+    int_deb: () => `${data.title} | INTERNATIONAL DEBATE`,
+    kp: () => `Komentarz Polityczny | ${organisationsShortnames}`,
+    lo: () => `${data.title} | Lustrzane Odbicie`,
+    pt: () => `${data.title} | Polityczny Throwback`,
+    ptyg: () => `PODSUMOWANIE TYGODNIA | ${organisationsShortnames}`,
+    qi: () => `${data.title} | QUICKFIRE INTERVIEW`,
+    mvsp: () => `MŁODZIEŻ VS ${data.title.toUpperCase()}`,
+    interview: () => `${data.title} | #WywiadDnia`,
+    expert: () => `${data.title} | OKIEM EKSPERTA`,
+    ring: () => `${data.title} | RING POLITYCZNY`,
   };
 
-  const defaultName = `${data.title} | ${getHashtag(data)}`;
+  const defaultName = () => [data?.title, getHashtag(data)]
+    .filter(v => !!v)
+    .join(" | ");
 
-  return config[data.type] || defaultName;
+  return (config[data.type] || defaultName)();
 };
 
 const brands = {
@@ -38,6 +49,7 @@ const brands = {
   interview: "t3W4doTZ7gu3fOaLrlu6VVRu",
   expert: "0Cwl7L7v9DtRCi0a0dNoXz77",
   ring: "qbFTQLMcF5N1P8Bvw70sZWBB",
+  default: "t3W4doTZ7gu3fOaLrlu6VVRu",
 };
 
 const destinations = {
@@ -56,10 +68,12 @@ const headers = {
 };
 
 const createBroadcast = async (data) => {
-  return await axios.post("https://streamyard.com/api/broadcasts", {
-    title: buildTitle(data),
+  const title = await buildTitle(data);
+
+  return await axios.post("https://streamyard.com/api/workspaces/akkx5hwQY7IRA33attqVflw4/broadcasts", {
+    title,
     recordOnly: true,
-    selectedBrandId: brands[data.type],
+    selectedBrandId: brands[data.type] || brands.default,
     csrfToken: strapi.config.get('hook.settings.streamyard').csrf,
   }, {
     method: 'POST',
@@ -68,10 +82,11 @@ const createBroadcast = async (data) => {
   });
 };
 
-const buildForm = ({ data, description, image, outputType }, { withDestination = true }) => {
+const buildForm = async ({ data, description, image, outputType }, { withDestination = true }) => {
   const formData = new FormData();
+  const title = await buildTitle(data);
 
-  formData.append('title', buildTitle(data));
+  formData.append('title', title);
   formData.append('description', description);
   formData.append('privacy', data?.published_at ? 'public' : 'unlisted');
   formData.append('csrfToken', strapi.config.get('hook.settings.streamyard').csrf);
@@ -89,9 +104,9 @@ const buildForm = ({ data, description, image, outputType }, { withDestination =
 }
 
 const createOutput = async ({ id, ...formParams }) => {
-  const formData = buildForm(formParams, { withDestination: true });
+  const formData = await buildForm(formParams, { withDestination: true });
 
-  return await axios.post(`https://streamyard.com/api/broadcasts/${id}/outputs`, formData, {
+  return await axios.post(`https://streamyard.com/api/broadcasts/${id}/destinations`, formData, {
     method: 'POST',
     withCredentials: true,
     headers: {
@@ -109,7 +124,7 @@ const updateOutputs = async ({ id, ...formParams }) => {
 
   for (const outputKey in data.outputs) {
     const { destinationId, platform } = data.outputs[outputKey];
-    const formData = buildForm({ ...formParams, outputType: platform }, { withDestination: false });
+    const formData = await buildForm({ ...formParams, outputType: platform }, { withDestination: false });
 
     await axios.post(`https://streamyard.com/api/broadcasts/${id}/destinations/${destinationId}`, formData, {
       method: 'POST',
