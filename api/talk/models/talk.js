@@ -15,11 +15,13 @@ const onChange = async (data) => {
     const politicianRawName = politicians[0].name;
 
     const titles = {
-      "expert": data.title.includes(politicianRawName) ? data.title : `${politicianRawName} – ${data.title}`,
-      "default": formatName(politicians[0], { orgShortName: true })
+      "expert": () => (data.title || "").includes(politicianRawName)
+        ? data.title
+        : `${politicianRawName} – ${data.title}`,
+      "default": () => formatName(politicians[0], { orgShortName: true })
     }
 
-    data.title = titles[data.type] || titles.default;
+    data.title = (titles[data.type] || titles.default)();
   }
 
   if (politicians.length === 2 && ["ring", "lo"].includes(data.type)) {
