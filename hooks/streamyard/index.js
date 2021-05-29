@@ -3,28 +3,46 @@ const _ = require('lodash');
 const FormData = require('form-data');
 
 const buildTitle = (data) => {
+  const getHashtag = strapi.services.talk.getHashtag;
+
   const config = {
-    'mvsp': `MŁODZIEŻ VS ${data.title.toUpperCase()}`,
-    'classic': `${data.title} | DEBATA MŁODZIEŻÓWEK`,
-    'interview': `${data.title} o sytuacji w Polsce! | WYWIAD`,
-    'expert': `${data.title} | OKIEM EKSPERTA`,
-    'ring': `${data.title} | RING POLITYCZNY`,
+    classic: `${data.title} | DEBATA MŁODZIEŻÓWEK`,
+    dl: `DEBATA LIDERÓW | ${data.organisations.map(o => o.shortname).join(",")}`,
+    int_deb: `${data.title} | INTERNATIONAL DEBATE`,
+    kp: `Komentarz Polityczny | ${data.organisations.map(o => o.shortname).join(",")}`,
+    lo: `${data.title} | Lustrzane Odbicie`,
+    pt: `${data.title} | Polityczny Throwback`,
+    ptyg: `PODSUMOWANIE TYGODNIA | ${data.organisations.map(o => o.shortname).join(",")}`,
+    qi: `${data.title} | QUICKFIRE INTERVIEW`,
+    mvsp: `MŁODZIEŻ VS ${data.title.toUpperCase()}`,
+    interview: `${data.title} | #WywiadDnia`,
+    expert: `${data.title} | OKIEM EKSPERTA`,
+    ring: `${data.title} | RING POLITYCZNY`,
   };
 
-  return config[data.type];
+  const defaultName = `${data.title} | ${getHashtag(data)}`;
+
+  return config[data.type] || defaultName;
 };
 
 const brands = {
-  'mvsp': '6376486378668032',
-  'classic': '5990601388720128',
-  'interview': '4976477451321344',
-  'expert': '6570354065801216',
-  'ring': '6040516632510464'
+  classic: "t3W4doTZ7gu3fOaLrlu6VVRu",
+  dl: "qTydMmzGEd95cxqQmRhfItDc",
+  int_deb: "t3W4doTZ7gu3fOaLrlu6VVRu",
+  kp: "er0vqwXyk2KH7PQIV0sPRAOb",
+  lo: "nMJM9iyQ7PboMUba1Pcfg6Tt",
+  pt: "bi2aO6yHO6LVtTsLjpt9unQM",
+  ptyg: "Fj4C8RDlNkaqsgKHv6hBh4fh",
+  qi: "YAG94xKF65q2vmQQUTyUPWXs",
+  mvsp: "4XuxIaSCtIegHytw07EnLlIl",
+  interview: "t3W4doTZ7gu3fOaLrlu6VVRu",
+  expert: "0Cwl7L7v9DtRCi0a0dNoXz77",
+  ring: "qbFTQLMcF5N1P8Bvw70sZWBB",
 };
 
 const destinations = {
-  'facebook': '5451405091667968',
-  'youtube': '5768594248171520'
+  'facebook': 'tWKkSJZ39rpXGUshyPRDnuPJ',
+  'youtube': 'FCQB4jQc6ikmXazB3XwXjbfH'
 };
 
 const headers = {
