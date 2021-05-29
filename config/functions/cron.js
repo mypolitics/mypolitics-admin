@@ -14,13 +14,6 @@ const productionWrapper = async (func) => {
   return func();
 }
 
-const productionWrapper2 = async (func) => {
-  if (process.env.NODE_ENV === "production") {
-    return;
-  }
-  return func();
-}
-
 const everydayLives = async () => {
   const tommorowDate = moment().add(1, "days");
   const formatName = strapi.services.politician.formatName;
