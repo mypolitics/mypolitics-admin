@@ -44,6 +44,21 @@ const partiesIds = {
   },
 };
 
+const months = {
+  "1": "january",
+  "2": "february",
+  "3": "march",
+  "4": "april",
+  "5": "may",
+  "6": "june",
+  "7": "july",
+  "8": "august",
+  "9": "september",
+  "10": "october",
+  "11": "november",
+  "12": "december",
+}
+
 const titleRegex = new RegExp(`^(${Object.keys(Country).join("|")}),\\s+(.+)\\s+poll:`, 'gm')
 const valuesRegex = /(?:^|\()(\S+)[-~→].+\)?: (\d{1,4})(?:%|$|\S)/gm;
 const fieldworkRegex = /^Field\s?work: (?:(.+)\s?[,–-]\s?)?(.+)$/gm;
@@ -52,23 +67,14 @@ const matchAllValues = (str, regex) => [...str.matchAll(regex)];
 const toCorrectDate = date => {
   date = date.replaceAll("/", "-").split("-");
 
-  const months = {
-    "01": "january",
-    "02": "february",
-    "03": "march",
-    "04": "april",
-    "05": "may",
-    "06": "june",
-    "07": "july",
-    "08": "august",
-    "09": "september",
-    "10": "october",
-    "11": "november",
-    "12": "december",
-  }
+  const monthsKeys = Object.keys(months);
+  monthsKeys.forEach(key => {
+    const monthNumber = !!date[1] ? parseInt(date[1]).toString() : null
+    if (!monthNumber || !monthsKeys.includes(monthNumber)) {
+      return;
+    }
 
-  Object.keys(months).forEach(key => {
-    date[1] = date[1].replace(key, months[key])
+    date[1] = monthNumber.replace(key, months[key])
   })
 
   return date.join("-");
@@ -82,7 +88,7 @@ const getStartEnd = (text) => {
     start = end;
   } else {
     let [day, month, year] = start.split("-");
-    month = month ? month : end.getMonth();
+    month = months[month ? month : end.getMonth()];
     year = year ? year : end.getFullYear();
     start = new Date([day, month, year].join("-"));
   }
@@ -121,6 +127,7 @@ const getPartyPercent = (text, countryCode) => {
   
   return allParties
     .filter(({ organisation }) => !!organisation)
+    .sort((a, b) => parseFloat(b.value) - parseFloat(a.value))
     .concat(otherParties.value > 0 ? otherParties : [])
 }
 

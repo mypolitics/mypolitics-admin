@@ -331,6 +331,11 @@
     },
     "description_twitter": {
       "type": "text"
+    },
+    "custom_poll": {
+      "type": "component",
+      "repeatable": true,
+      "component": "poll.custom-poll"
     }
   }
 }

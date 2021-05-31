@@ -8,7 +8,9 @@ const getImage = async ({ templateName, content }) => {
   
   const sizes = {
     poll: () => {
-      const width = content.parties.length * (96 + 16) + 256;
+      const columnWidth = content.longNames ? 160 : 96;
+      const margin = 16;
+      const width = content.columns.length * (columnWidth + margin) + 256;
       return [Math.max(width, 1056), 1056];
     },
     square: () => [900, 900],

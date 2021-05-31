@@ -3,6 +3,7 @@ module.exports = `
   .body {
     display: flex;
     flex-direction: column;
+    height: 100%;
   }
 
   .container {
@@ -13,6 +14,8 @@ module.exports = `
     grid-gap: 96px;
     font-family: Poppins;
     font-style: normal;
+    grid-template-rows: auto 1fr;
+    height: 100%;
   }
 
   .header {
@@ -75,11 +78,14 @@ module.exports = `
     display: flex;
     flex-direction: column;
     justify-content: center;
-    width: 96px;
-  }
-  
-  .column > div:not(:last-child) {
-    margin-bottom: 16px;
+    align-items: center;
+    text-align: center;
+    gap: 16px;
+    {{#if longNames}}
+      width: 160px;
+    {{else}}
+      width: 96px;
+    {{/if}}
   }
   
   .party-logo {
@@ -102,7 +108,9 @@ module.exports = `
     border-radius: 4px;
     font-size: 24px;
     font-weight: 600;
-    display: inline;
+    display: inline-flex;
+    justify-content: center;
+    align-items: center;
   }
   
   .chip-container {
@@ -134,7 +142,7 @@ module.exports = `
       </div>
     </div>
     <div class="cols">
-      {{#each parties}}
+      {{#each columns}}
         <div class="column">
           <div class="chip-container">
              <div class="chip">{{value}}%</div>
@@ -144,10 +152,23 @@ module.exports = `
             box-shadow: 0px 0px 8px 0px {{shadowColor}};
             height: {{height}}px;
           "></div>
-          <img
-            class="party-logo"
-            src="{{logo}}"
-          />
+          {{#if logo}}
+            <img
+              class="party-logo"
+              src="{{logo}}"
+            />
+          {{/if}}
+          {{#if name}}
+            <div class="chip" style="
+              background: {{color}};
+              color: #FFF;
+              text-align: center;
+              line-height: 1.2;
+              font-size: 18px;
+              min-height: 64px;
+              min-width: 160px;
+            ">{{name}}</div>
+          {{/if}}
         </div>
       {{/each}}
     </div>
