@@ -1,0 +1,41 @@
+{
+  "collectionName": "components_poll_custom_polls",
+  "info": {
+    "name": "custom_poll",
+    "icon": "ad",
+    "description": ""
+  },
+  "options": {},
+  "attributes": {
+    "name": {
+      "type": "string"
+    },
+    "photo": {
+      "model": "file",
+      "via": "related",
+      "allowedTypes": [
+        "images"
+      ],
+      "plugin": "upload",
+      "required": false
+    },
+    "value": {
+      "type": "string",
+      "required": true
+    },
+    "color": {
+      "type": "enumeration",
+      "enum": [
+        "red",
+        "dark_red",
+        "green",
+        "dark_green",
+        "gray",
+        "violet",
+        "blue",
+        "pink",
+        "orange"
+      ]
+    }
+  }
+}

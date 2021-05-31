@@ -17,15 +17,15 @@ const hexToRGB = (hex, alpha) => {
 };
 
 const onChange = async (data) => {
-  if (!data.party_percent) {
+  const HEIGHT_BASE = 314;
+  const API_URL = process.env.NODE_ENV !== "production" ? 'http://localhost:1337/' : 'https://admin.mypolitics.pl/';
+
+  if (!data.party_percent && !data.custom_poll) {
     return;
   }
 
-  data.party_percent = data.party_percent.sort((a, b) => parseFloat(b.value) - parseFloat(a.value))
-
-  const HEIGHT_BASE = 314;
-  const maxValue = Math.max(...data.party_percent.map(({ value }) => parseInt(value, 10)));
-  const API_URL = process.env.NODE_ENV !== "production" ? 'http://localhost:1337/' : 'https://admin.mypolitics.pl/';
+  const dataSource = data.party_percent.length > 0 ? data.party_percent : data.custom_poll;
+  const maxValue = Math.max(...dataSource.map(({ value }) => parseInt(value, 10)));
   const organisations = await strapi.query('organisation').find({
     id_in: data.party_percent.map(({ organisation }) => organisation)
   });
@@ -47,11 +47,36 @@ const onChange = async (data) => {
     }
   });
 
+  const custom_columns = data.custom_poll
+    .map(({ name, value, color: colorName, photo }) => {
+      const color = {
+        "red": "#EB5760",
+        "dark_red": "#CB4B53",
+        "green": "#2CD598",
+        "dark_green": "#26B783",
+        "gray": "#324C52",
+        "violet": "#9B51E0",
+        "blue": "#2D9CDB",
+        "pink": "#CF54C3",
+        "orange": "#F2994A",
+      }[colorName];
+
+      return {
+        logo: photo?.url,
+        shadowColor: hexToRGB(color, 0.3),
+        height: (parseInt(value, 10) / maxValue) * HEIGHT_BASE,
+        value,
+        color,
+        name,
+      }
+    });
+
   const content = {
     chips: data.chips.split(";"),
     title: data.title,
     country: `${API_URL}flags/${data.country}.png`,
-    parties,
+    longNames: custom_columns.length > 0,
+    columns: parties.length > 0 ? parties : custom_columns,
   };
 
   const { image } = await strapi.services.getImage({ templateName: 'poll', content });

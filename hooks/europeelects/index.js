@@ -127,6 +127,7 @@ const getPartyPercent = (text, countryCode) => {
   
   return allParties
     .filter(({ organisation }) => !!organisation)
+    .sort((a, b) => parseFloat(b.value) - parseFloat(a.value))
     .concat(otherParties.value > 0 ? otherParties : [])
 }
 

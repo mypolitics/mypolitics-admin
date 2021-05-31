@@ -47,6 +47,10 @@ const buildDescription = async (data, { twitter = false }) => {
     })
     .join("\n");
 
+    const customData = data.custom_poll
+      .map(({ name, value }) => `${name} ${value}%`)
+      .join("\n");
+
   const startDate = moment(data.fieldwork_start).format("DD.MM");
   const endDate = moment(data.fieldwork_end).format("DD.MM.YYYY");
 
@@ -63,7 +67,7 @@ const buildDescription = async (data, { twitter = false }) => {
   const paragraphs = [
     `${toEmoji(data.country)} ${data.title}`,
     `📊 ${chips.join(" | ")}`,
-    orgsData
+    orgsData.length > 0 ? orgsData : customData
   ];
 
   return paragraphs.join(`\n\n`);
